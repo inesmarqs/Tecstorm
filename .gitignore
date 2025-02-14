@@ -1,52 +1,76 @@
-# Prerequisites
-*.d
+# OS-specific files
+.DS_Store
+Thumbs.db
 
-# Object files
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Build artifacts (C, Java, React, Python)
+build/
+dist/
+out/
+target/
+bin/
+obj/
+
+# C/C++ specific
 *.o
-*.ko
-*.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
 *.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
 *.so
-*.so.*
-*.dylib
-
-# Executables
 *.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
+*.dll
 *.dSYM/
-*.su
-*.idb
-*.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Java specific
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.project
+*.classpath
+*.settings/
+*.gradle/
+.gradle/
+mvnw
+mvnw.cmd
+.idea/
+
+# React & Node.js
+node_modules/
+*.cache
+.yarn/
+.pnpm-store/
+.npmrc
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+*.env.local
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# MQTT related (if using Mosquitto, for example)
+mosquitto.log
+mosquitto.conf
+*.db
+
+# IDE/editor files
+.vscode/
+.idea/
+*.iml
+
+# Environment & config files
+.env
+.env.local
+config/secrets.yml
+
+# Docker
+.dockerignore
