@@ -146,7 +146,7 @@ async def pay(client_id: int = Header(...), db: Session = Depends(get_db)):
     
     return {"message": "All items removed from shopping cart successfully!"}
 
-@app.post("/takeMeThere")
+@app.get("/takeMeThere")
 async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_db)):
     """Gets product location"""
     
