@@ -4,3 +4,4 @@ requests
 sqalchemy
 fastapi
 selenium
+bs4
