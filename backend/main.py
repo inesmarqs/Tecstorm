@@ -145,3 +145,13 @@ async def pay(client_id: int = Header(...), db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Error while deleting shopping cart items.")
     
     return {"message": "All items removed from shopping cart successfully!"}
+
+@app.post("/takeMeThere")
+async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_db)):
+    """Gets product location"""
+    
+    product = get_product(db, prodcut_id)
+
+    if not product:
+        raise HTTPException(status_code=404, detail="No product found for this product id.")
+    return {"message": product.store_location}
