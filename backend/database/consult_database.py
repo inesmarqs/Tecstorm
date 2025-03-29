@@ -18,7 +18,8 @@ def print_all_clients():
                   f"Client Name: {client.name},"
                   f"Client Telephone: {client.telephone},"
                   f"Client CreditCard: {client.credit_card},"
-                  f"Client Birth Date: {client.birth_date}"
+                  f"Client Birth Date: {client.birth_date},"
+                  f"Client Password: {client.password}"
                 )
     finally:
         db.close()

@@ -15,6 +15,7 @@ class Client(Base):
     telephone = Column(String, nullable=False)
     credit_card = Column(String, nullable=False)
     birth_date = Column(Date, nullable=False)
+    password = Column(String, nullable=False)
     
     allergens = relationship("Allergen", back_populates="client", cascade="all, delete-orphan")
 

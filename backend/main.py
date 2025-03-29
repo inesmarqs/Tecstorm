@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 import ai_services
 from database import SessionLocal
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from database.models import Client, Product, Allergen, Ingredient, NutricionalInformation
@@ -65,6 +65,13 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
 
     return StreamingResponse(iter_content(), media_type="application/json")
 
-
-
-
+@app.post("/login")
+async def login(db: Session = Depends(get_db), username: str = Header(...), password: str = Header(...)):
+    """Login endpoint that checks if username and password match."""
+    client = db.query(Client).filter(Client.name == username and Client.password==password).first()
+    client_id 
+    if not client:
+        client_id = add_client(db, username, "915193363", "22222222222", "12-12-1980", password)
+    else: 
+        client_id = client.id
+    return {client_id}

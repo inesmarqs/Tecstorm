@@ -5,9 +5,9 @@ from models import Client, Product, Ingredient, Allergen, NutricionalInformation
 
 # ------------- INSERT COMMANDS -------------
 
-def add_client(db: Session, name: str, telephone: str, creditcard: str, birth_date: str):
+def add_client(db: Session, name: str, telephone: str, creditcard: str, birth_date: str, password:str):
     """Adds a client to the database."""
-    db_client = Client(name=name, telephone=telephone, creditcard=creditcard, birth_date=birth_date)
+    db_client = Client(name=name, telephone=telephone, creditcard=creditcard, birth_date=birth_date, password=password)
     db.add(db_client)
     db.commit()
     return db_client.id
@@ -68,7 +68,6 @@ def get_client(db: Session, client_id: int):
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     return client
-
 
 def get_product(db: Session, product_id: int):
     """Retrieves a product by ID."""
