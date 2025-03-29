@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from database.models import Client, Product, Allergen, Ingredient, NutricionalInformation
 from sqlalchemy.orm import Session
+import json
+
 
 from database.commands_database import (
     add_client,
@@ -20,7 +22,8 @@ from database.commands_database import (
     get_client,
     get_ingredients_by_product,
     get_nutricional_info,
-    get_product
+    get_product,
+    get_shopping_cart_by_client
 )
 
 app = FastAPI()
@@ -37,17 +40,30 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/video/{video_id}/claim/{claim_id}")
-async def get_clip(video_id: str, claim_id: int):
-    """_Send video file to client based on video_id and claim_id_."""
-    video_path = f"{video_id}/clips/claim_{claim_id}.mp4"
-    if not os.path.exists(upload_directory/video_path):
-        raise HTTPException(status_code=404, detail="Video not found")
-    print(upload_directory/video_path)
-    return StreamingResponse(open(upload_directory/video_path, "rb"), media_type="video/mp4")  # noqa: SIM115
+@app.get("/get/{client_id}/shopping_cart/products")
+async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(get_db)):
+    """Retrieve all products in the shopping cart for a given client as a streaming response."""
+    shopping_cart_items = get_shopping_cart_by_client(db, client_id)
+    cart_products = []
+    for item in shopping_cart_items:
+        product = db.query(Product).filter(Product.id == item.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product with ID {item.product_id} not found")
+        cart_products.append({
+            "product_id": product.id,
+            "name": product.name,
+            "brand": product.brand,
+            "price": product.price,
+            "quantity": item.quantity,  
+            "weight": product.weight,
+            "store_location": product.store_location
+        })
 
+    def iter_content():
+        content = json.dumps({"client_id": client_id, "cart_products": cart_products})
+        yield content  
 
-
+    return StreamingResponse(iter_content(), media_type="application/json")
 
 
 
