@@ -118,7 +118,7 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
 async def login(db: Session = Depends(get_db), username: str = Header(...), password: str = Header(...)):
     """Login endpoint that checks if username and password match."""
     client = db.query(Client).filter(Client.name == username and Client.password==password).first()
-    client_id 
+     
     if not client:
         client_id = add_client(db, username, "915193363", "22222222222", "12-12-1980", password)
     else: 
