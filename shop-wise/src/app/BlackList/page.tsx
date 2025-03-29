@@ -47,9 +47,9 @@ export default function BlackList() {
         }
     
         console.log("Item added successfully!");
-        setBlacklist([...blacklist, newItem]); // ✅ Update UI
-        setNewItem(""); // ✅ Clear input field
-        setShowAddItem(false); // ✅ Hide input box
+        setBlacklist([...blacklist, newItem]); 
+        setNewItem(""); 
+        setShowAddItem(false); 
     
         } catch (error) {
         console.error("Error adding item:", error);
@@ -90,7 +90,7 @@ export default function BlackList() {
         <div className="black-list-items-container">
           {blacklist.map((item, index) => (
             <div key={index} className="black-list-item">
-              <span>{item}</span>
+              <span style={{flex:"1"}}>{item}</span>
               <DeleteOutlineIcon
                 fontSize="medium"
                 style={{
