@@ -7,6 +7,8 @@ load_dotenv()
 # Initialize Groq client (assuming API key is in the environment)
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+#TODO-Meal Recommendation
+
 # Function to check if a product is suitable based on allergens
 def is_product_suitable(product_name: str, product_ingredients: list, user_allergens: list) -> str:
     """

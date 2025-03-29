@@ -1,5 +1,5 @@
 """Consults the database and prints all the data in the shopwise database."""
-from models import Client, NutricionalInformation, Product, Ingredient, Allergen
+from models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -20,6 +20,20 @@ def print_all_clients():
                   f"Client CreditCard: {client.credit_card},"
                   f"Client Birth Date: {client.birth_date}"
                 )
+    finally:
+        db.close()
+
+def print_all_shopping_carts():
+    """Prints all shopping carts in the shopwise database"""
+    db = SessionLocal()
+    try:
+        carts = db.query(ShoppingCart).all()
+        print("-------------------------------------------------------------\Shopping Carts:")
+        for cart in carts:
+            print(f"Shopping Cart ID: {cart.id},"
+                  f"Shooping Cart Client ID: {cart.client_id},"
+                  f"Shooping Cart Product ID: {cart.product_id}"
+                  )
     finally:
         db.close()
 

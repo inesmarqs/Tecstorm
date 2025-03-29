@@ -18,6 +18,17 @@ class Client(Base):
     
     allergens = relationship("Allergen", back_populates="client", cascade="all, delete-orphan")
 
+class ShoppingCart(Base):
+    """Shopping Cart Table."""
+    __tablename__ = "shopping_cart"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    client_id = Column(Integer, ForeignKey("client.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
+
+    client = relationship("Client", back_populates="shopping_carts")
+    product = relationship("Product")
 
 class NutricionalInformation(Base):
     """Nutricional Information Table"""

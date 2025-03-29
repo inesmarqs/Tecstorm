@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from models import Client, Product, Ingredient, Allergen, NutricionalInformation
+from models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart
 
 
 # ------------- INSERT COMMANDS -------------
@@ -53,6 +53,12 @@ def add_nutricional_info(db: Session, energy_kj: float, energy_kcal: float, lipi
     db.commit()
     return db_info.id
 
+def add_shopping_cart(db: Session, client_id: int, product_id: int):
+    """Adds shopping cart information to the database."""
+    db_info = ShoppingCart(client_id=client_id, product_id=product_id)
+    db.add(db_info)
+    db.commit()
+    return db_info.id
 
 # ------------- GET COMMANDS -------------
 
@@ -94,3 +100,10 @@ def get_nutricional_info(db: Session, nutricional_info_id: int):
     if not nutricional_info:
         raise HTTPException(status_code=404, detail="Nutritional information not found")
     return nutricional_info
+
+def get_shopping_cart_by_client(db: Session, client_id: int):
+    """Retrieves all products ids in shopping cart for a given client."""
+    carts = db.query(ShoppingCart).filter(ShoppingCart.client_id==client_id).all()
+    if not carts:
+        raise HTTPException(status_code=404, detail="Shopping Cart not found")
+    return carts

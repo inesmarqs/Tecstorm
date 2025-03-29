@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from database import Base, engine
-from models import Client, NutricionalInformation, Product, Ingredient, Allergen
+from models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart
 
 if Path("shopwise.db").exists():
     Path("shopwise.db").unlink()
