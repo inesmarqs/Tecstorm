@@ -1,23 +1,23 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart
+from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart, Category
 
 
 # ------------- INSERT COMMANDS -------------
 
-def add_client(db: Session, name: str, telephone: str, creditcard: str, birth_date: str, password:str):
+def add_client(db: Session, name: str, telephone: str, credit_card: str, birth_date: str, password:str):
     """Adds a client to the database."""
-    db_client = Client(name=name, telephone=telephone, creditcard=creditcard, birth_date=birth_date, password=password)
+    db_client = Client(name=name, telephone=telephone, credit_card=credit_card, birth_date=birth_date, password=password)
     db.add(db_client)
     db.commit()
     return db_client.id
 
 
-def add_product(db: Session, bar_code: str, name: str, brand: str, price: float, weight: float, store_location: str):
+def add_product(db: Session, bar_code: str, name: str, brand: str, price: float, weight: float, store_location: str, category_id: int):
     """Adds a product to the database."""
     db_product = Product(
         bar_code=bar_code, name=name, brand=brand, price=price, weight=weight, 
-        store_location=store_location   
+        store_location=store_location, category_id=category_id   
         )
     db.add(db_product)
     db.commit()
@@ -60,6 +60,13 @@ def add_shopping_cart(db: Session, client_id: int, product_id: int):
     db.commit()
     return db_info.id
 
+def add_category(db: Session, name: str):
+    """Adds a category to the database."""
+    db_category = Category(name=name)
+    db.add(db_category)
+    db.commit()
+    return db_category.id
+
 # ------------- GET COMMANDS -------------
 
 def get_client(db: Session, client_id: int):
@@ -75,6 +82,13 @@ def get_product(db: Session, product_id: int):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+def get_category(db: Session, category_id: int):
+    """Retrieves a category by ID."""
+    category = db.query(Category).filter(Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
 
 
 def get_ingredients_by_product(db: Session, product_id: int):
@@ -114,6 +128,19 @@ def get_product_by_barcode(db: Session, barcode: int):
         raise HTTPException(status_code=404, details="Product not found for this bar code.")
     return product
 
+def get_product_by_category(db: Session, category_id: int):
+    """Retrieved the product given a category"""
+    product = db.query(Product).filter(Product.category_id==category_id).all()
+    if not product: 
+        raise HTTPException(status_code=404, details="Product not found for this category.")
+    return product
+
+def get_product_by_category_without_blacklisted(db: Session, category_id: int, problem_id: int):
+    """Retrieved the product given a category"""
+    product = db.query(Product).filter(Product.category_id==category_id, Product.id != problem_id).all()
+    if not product: 
+        raise HTTPException(status_code=404, details="Product not found for this category.")
+    return product
 
 #-----------------------DELETE COMMANDS------------------------
 

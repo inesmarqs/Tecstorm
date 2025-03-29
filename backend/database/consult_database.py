@@ -1,5 +1,5 @@
 """Consults the database and prints all the data in the shopwise database."""
-from database.models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart
+from database.models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart, Category
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -106,6 +106,20 @@ def print_all_nutricional_information():
                   f"Salt: {information.salt}")
     finally:
         db.close()
+        
+def print_all_categories():
+    """Prints all the categories in the shopwise database."""
+    db = SessionLocal()
+    try:
+        categories = db.query(Category).all()
+        print("--------------------------------------------------------------\Categories:")
+        for category in categories:
+            print(f"Category ID: {category.id},"
+                  f"Category Name: {category.name}"
+                )
+    finally:
+        db.close()
+        
 
 if __name__ == "__main__":
     print_all_clients();

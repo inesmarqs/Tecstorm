@@ -1,14 +1,16 @@
 """Deletes the shopwise database file."""
 
 import shutil
-from pathlib import Path
+import os
 
-parent = Path(__file__).parent 
+try:
+    os.remove("shopwise.db")
+except Exception as e:
+    pass
 
-db_path = parent/"shopwise.db"
+try:
+    os.remove("../shopwise.db")
+except Exception as e:
+    pass
 
-if db_path.exists():
-    print(f"Deleting the database file: {db_path}")
-    db_path.unlink()
-
-
+print("Database deleted")

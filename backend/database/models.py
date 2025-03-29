@@ -14,7 +14,7 @@ class Client(Base):
     name = Column(String, nullable=False)
     telephone = Column(String, nullable=False)
     credit_card = Column(String, nullable=False)
-    birth_date = Column(Date, nullable=False)
+    birth_date = Column(String, nullable=False)
     password = Column(String, nullable=False)
     
     allergens = relationship("Allergen", back_populates="client", cascade="all, delete-orphan")
@@ -49,7 +49,13 @@ class NutricionalInformation(Base):
     salt = Column(Float, nullable=False)
     product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
     product = relationship("Product", back_populates="nutricional_information")
-
+    
+class Category(Base):
+    """Category Table"""
+    __tablename__ = "category"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
 
 
 class Product(Base):
@@ -63,9 +69,9 @@ class Product(Base):
     price = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
     store_location = Column(String, nullable=False)
+    category_id = Column(Integer, ForeignKey("category.id", ondelete="CASCADE"), nullable=False) #TODO check if is CASCADE
     ingredients = relationship("Ingredient", back_populates="product", cascade="all, delete-orphan")
     nutricional_information = relationship("NutricionalInformation", back_populates="product")
-
 
 
 class Ingredient(Base):

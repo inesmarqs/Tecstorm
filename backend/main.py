@@ -17,16 +17,20 @@ from database.commands_database import (
     add_client,
     add_allergen,
     add_ingredient,
+    add_category,
     add_nutricional_info,
     add_product,
     add_shopping_cart,
     get_allergens_by_client,
     get_client,
+    get_category,
     get_ingredients_by_product,
     get_nutricional_info,
     get_product,
     get_shopping_cart_by_client,
     get_product_by_barcode, 
+    get_product_by_category,
+    get_product_by_category_without_blacklisted,
     delete_shopping_cart_items
 )
 
@@ -50,9 +54,14 @@ def get_db():
     finally:
         db.close()
         
-def example_data():
-    print("1")
+def populate_db():
     db = next(get_db())
+    category = add_category(db, "frutas")
+    
+    client_id = add_client(db, "user1", "915193363", "22222222222", "12-12-1980", "password")
+    shopping_cart = add_shopping_cart(db, client_id, 1)
+    allergens = add_allergen(db, client_id, "gluten")
+    
     nutricion1 = add_nutricional_info(db,
         energy_kj = 100,
         energy_kcal = 50,
@@ -85,8 +94,36 @@ def example_data():
     )
     print("Try to add")
     
-    add_product(db, bar_code=product.bar_code, name=product.name, brand=product.brand, price=product.price, weight=product.weight, store_location=product.store_location)
-    print(get_product(db, 1))
+    add_product(db, bar_code=product.bar_code, name=product.name, brand=product.brand, price=product.price, weight=product.weight, store_location=product.store_location, category_id=category)
+    add_product(db, bar_code="123456781", name="banana", brand="banana", price=1.99, weight=1.0, store_location="a1", category_id=category)
+    add_product(db, bar_code="123444444", name="cherry", brand="cherry", price=1.99, weight=1.0, store_location="a1", category_id=category)
+    add_product(db, bar_code="666632342", name="apple", brand="apple", price=1.99, weight=1.0, store_location="a1", category_id=category)
+    add_product(db, bar_code="123453212", name="tangerine", brand="tangerine", price=1.99, weight=1.0, store_location="a1", category_id=category)
+    add_product(db, bar_code="123450089", name="grape", brand="grape", price=1.99, weight=1.0, store_location="a1", category_id=category)
+    add_ingredient(db, product.id, "gluten")
+    add_ingredient(db, 1, "orange")
+    add_ingredient(db, 2, "banana")
+    add_ingredient(db, 3, "cherry")
+    add_ingredient(db, 4, "apple")
+    add_ingredient(db, 5, "orange")
+    add_ingredient(db, 6, "grape")
+    add_nutricional_info(db,
+        energy_kj = 100,
+        energy_kcal = 50, lipids=10, saturated_lipids=5, carbon_hidrats=20, sugar_carbon_hidrats=10, fiber=5, protein=10, salt=0, product_id=1)
+        
+def example_data():
+    print("1")
+    db = next(get_db())
+    check = get_product(db, 1)
+    print(check)
+    client = get_client(db, 1)
+    response = ai_services.is_product_suitable(check.name, get_ingredients_by_product(db, check.id), get_allergens_by_client(db, client.id))
+    if response.lower() == "no":
+        recommendations = ai_services.get_product_recommendations(check, get_product_by_category_without_blacklisted(db, check.category_id, check.id), get_allergens_by_client(db, client.id))
+        print(recommendations)
+    else:
+        print("Product is suitable")
+    
     
     
 @app.get("/get/{client_id}/shopping_cart/products")
@@ -118,14 +155,11 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
 async def login(db: Session = Depends(get_db), username: str = Header(...), password: str = Header(...)):
     """Login endpoint that checks if username and password match."""
     client = db.query(Client).filter(Client.name == username and Client.password==password).first()
-     
     if not client:
         client_id = add_client(db, username, "915193363", "22222222222", "12-12-1980", password)
     else: 
         client_id = client.id
     return {client_id}
-
-example_data()
 
 @app.post("/addToBlacklist")
 async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: int = Header(...), db: Session = Depends(get_db)):
@@ -186,7 +220,5 @@ def on_message(client, userdata, message):
     finally:
         db.close() 
 
-mqtt_client.on_connect = on_connect
-mqtt_client.on_message = on_message
-mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
-mqtt_client.loop_start()  # Start listening in the background
+populate_db()
+example_data()
