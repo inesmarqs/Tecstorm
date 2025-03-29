@@ -2,7 +2,7 @@ import asyncio
 import os
 import shutil
 from pathlib import Path
-import ai_services
+#import ai_services
 from database.database import SessionLocal
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 import json
 import time
 import threading
-from mqtt_server import start_mqtt
+#from mqtt_server import start_mqtt
 from db_session import get_db
 
 from database.commands_database import (
@@ -37,6 +37,15 @@ from database.commands_database import (
 )
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
         
 def populate_db():
     db = next(get_db())
@@ -95,19 +104,19 @@ def populate_db():
         energy_kj = 100,
         energy_kcal = 50, lipids=10, saturated_lipids=5, carbon_hidrats=20, sugar_carbon_hidrats=10, fiber=5, protein=10, salt=0, product_id=1)
         
-def example_data():
-    print("1")
-    time.sleep(4)
-    db = next(get_db())
-    check = get_product(db, 1)
-    print(check)
-    client = get_client(db, 1)
-    response = ai_services.is_product_suitable(check.name, get_ingredients_by_product(db, check.id), get_allergens_by_client(db, client.id))
-    if response.lower() == "no":
-        recommendations = ai_services.get_product_recommendations(check, get_product_by_category_without_blacklisted(db, check.category_id, check.id), get_allergens_by_client(db, client.id))
-        print(recommendations)
-    else:
-        print("Product is suitable")
+#def example_data():
+#    print("1")
+#    time.sleep(4)
+#    db = next(get_db())
+#    check = get_product(db, 1)
+#    print(check)
+#    client = get_client(db, 1)
+#    response = ai_services.is_product_suitable(check.name, get_ingredients_by_product(db, check.id), get_allergens_by_client(db, client.id))
+#    if response.lower() == "no":
+#        recommendations = ai_services.get_product_recommendations(check, get_product_by_category_without_blacklisted(db, check.category_id, check.id), get_allergens_by_client(db, client.id))
+#        print(recommendations)
+#    else:
+#        print("Product is suitable")
     
     
     
@@ -182,7 +191,8 @@ async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
 
-mqtt_thread = threading.Thread(target=start_mqtt)
-mqtt_thread.start()
-populate_db()
-example_data()
+#mqtt_thread = threading.Thread(target=start_mqtt)
+#mqtt_thread.start()
+#populate_db()
+#example_data()
+#

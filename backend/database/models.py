@@ -56,6 +56,7 @@ class Category(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
+    products = relationship("Product", back_populates="category", cascade="all, delete-orphan")
 
 
 class Product(Base):
@@ -72,7 +73,7 @@ class Product(Base):
     category_id = Column(Integer, ForeignKey("category.id", ondelete="CASCADE"), nullable=False) #TODO check if is CASCADE
     ingredients = relationship("Ingredient", back_populates="product", cascade="all, delete-orphan")
     nutricional_information = relationship("NutricionalInformation", back_populates="product")
-
+    category = relationship("Category", back_populates="products")
 
 class Ingredient(Base):
     """Ingredient Table."""

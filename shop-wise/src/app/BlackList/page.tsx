@@ -4,7 +4,12 @@ import BottomBar from "../BottomBar/bottomBar";
 import AddIcon from '@mui/icons-material/Add';
 import BlackListItem from "../BlackListItem/page";
 
+
+
+
 export default function BlackList() {
+
+    
     return (
         <div className="black-list">
             <div className="location-container">
