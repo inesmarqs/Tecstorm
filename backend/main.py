@@ -23,7 +23,8 @@ from database.commands_database import (
     get_ingredients_by_product,
     get_nutricional_info,
     get_product,
-    get_shopping_cart_by_client
+    get_shopping_cart_by_client, 
+    delete_shopping_cart_items
 )
 
 app = FastAPI()
@@ -127,3 +128,20 @@ async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: 
         raise HTTPException(status_code=404, detail="Client not found")
     allergen_id = add_allergen(db=db, client_id=client_id, name=allergen_name)
     return {"message": f"Allergen '{allergen_name}' added to blacklist successfully", "allergen_id": allergen_id}
+
+
+@app.post("/pay")
+async def pay(client_id: int = Header(...), db: Session = Depends(get_db)):
+    """Deletes all products in shopping cart for a given client when they make a payment."""
+    
+    shopping_cart_items = get_shopping_cart_by_client(db, client_id)
+    
+    if not shopping_cart_items:
+        raise HTTPException(status_code=404, detail="No products found in shopping cart for this client.")
+    
+    try:
+        delete_shopping_cart_items(db, client_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error while deleting shopping cart items.")
+    
+    return {"message": "All items removed from shopping cart successfully!"}

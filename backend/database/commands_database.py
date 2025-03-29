@@ -106,3 +106,15 @@ def get_shopping_cart_by_client(db: Session, client_id: int):
     if not carts:
         raise HTTPException(status_code=404, detail="Shopping Cart not found")
     return carts
+
+
+#-----------------------DELETE COMMANDS------------------------
+
+def delete_shopping_cart_items(db: Session, client_id: int):
+    """Deletes all items in the shopping cart for a given client."""
+    try:
+        db.query(ShoppingCart).filter(ShoppingCart.client_id == client_id).delete(synchronize_session=False)
+        db.commit()
+    except Exception as e:
+        db.rollback()  
+        raise e
