@@ -3,3 +3,4 @@ python-dotenv
 requests
 sqalchemy
 fastapi
+selenium
