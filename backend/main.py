@@ -186,6 +186,21 @@ async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: 
     allergen_id = add_allergen(db=db, client_id=client_id, name=allergen_name)
     return {"message": f"Allergen '{allergen_name}' added to blacklist successfully", "allergen_id": allergen_id}
 
+@app.post("/deleteIngredientFromBlackList")
+async def delete_allergen_from_blacklist(allergen_name: str = Body(...), client_id: str = Header(...), db: Session = Depends(get_db)):  
+    """Delete an allergen from a client's blacklist."""
+    client_id = int(client_id)
+    client = get_client(db, client_id)
+    if not client: 
+        raise HTTPException(status_code=404, detail="Client not found")
+    allergens = get_allergens_by_client(db, client_id)
+    allergen = next((a for a in allergens if a.name == allergen_name), None)
+    if not allergen:
+        raise HTTPException(status_code=404, detail=f"Allergen '{allergen_name}' not found in client's blacklist")
+    db.delete(allergen)
+    db.commit()
+    return {"message": f"Allergen '{allergen_name}' removed from blacklist successfully"}
+
 
 @app.post("/pay")
 async def pay(client_id: int = Header(...), db: Session = Depends(get_db)):
