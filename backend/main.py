@@ -10,7 +10,8 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from database.models import Client, Product, Allergen, Ingredient, NutricionalInformation
 from sqlalchemy.orm import Session
 import json
-
+import paho.mqtt.client as mqtt
+import threading
 
 from database.commands_database import (
     add_client,
@@ -18,16 +19,24 @@ from database.commands_database import (
     add_ingredient,
     add_nutricional_info,
     add_product,
+    add_shopping_cart,
     get_allergens_by_client,
     get_client,
     get_ingredients_by_product,
     get_nutricional_info,
     get_product,
-    get_shopping_cart_by_client, 
+    get_shopping_cart_by_client,
+    get_product_by_barcode, 
     delete_shopping_cart_items
 )
 
 app = FastAPI()
+MQTT_BROKER = "test.mosquitto.org"  # Public broker
+MQTT_PORT = 1883
+MQTT_TOPIC = "test/topic"
+ 
+# Create an MQTT client instance
+mqtt_client = mqtt.Client()
 
 def get_db():
     """_get_db_.
@@ -80,8 +89,6 @@ def example_data():
     print(get_product(db, 1))
     
     
-    
-
 @app.get("/get/{client_id}/shopping_cart/products")
 async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(get_db)):
     """Retrieve all products in the shopping cart for a given client as a streaming response."""
@@ -155,3 +162,31 @@ async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_d
     if not product:
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected to MQTT Broker")
+    client.subscribe(MQTT_TOPIC)  # Listen for messages from Arduino
+
+def on_message(client, userdata, message):
+    """Handles incoming barcodes from Arduino."""
+    db = SessionLocal()  
+    try:
+        barcode = message.payload.decode()
+        print(f"Received barcode: {barcode}")
+        product = get_product_by_barcode(barcode)
+        if product:
+            client_id = 1  
+            add_shopping_cart(db, client_id=client_id, product_id=product.id)
+            print(f"Added {product.name} to shopping cart for Client {client_id}")
+        else:
+            print(f"Product not found for barcode {barcode}")
+
+    except Exception as e:
+        print(f"Error processing barcode: {e}")
+    finally:
+        db.close() 
+
+mqtt_client.on_connect = on_connect
+mqtt_client.on_message = on_message
+mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
+mqtt_client.loop_start()  # Start listening in the background

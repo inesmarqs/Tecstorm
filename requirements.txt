@@ -5,3 +5,4 @@ sqalchemy
 fastapi
 selenium
 bs4
+paho-mqtt

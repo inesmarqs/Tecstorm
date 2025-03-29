@@ -107,6 +107,13 @@ def get_shopping_cart_by_client(db: Session, client_id: int):
         raise HTTPException(status_code=404, detail="Shopping Cart not found")
     return carts
 
+def get_product_by_barcode(db: Session, barcode: int):
+    """Retrieved the product given a bar code"""
+    product = db.query(Product).filter(Product.bar_code==barcode).one()
+    if not product: 
+        raise HTTPException(status_code=404, details="Product not found for this bar code.")
+    return product
+
 
 #-----------------------DELETE COMMANDS------------------------
 
