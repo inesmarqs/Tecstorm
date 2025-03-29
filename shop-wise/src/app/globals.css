@@ -217,3 +217,18 @@ body {
   color: black;
   gap: 0.2rem;
 }
+
+
+.shopping-cart-total{
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: #0f1d1c66;
+  color: black;
+  gap: 0.2rem;
+  border-top: 1.3px solid rgba(95, 95, 95, 0.65);
+  width: 100%;
+  font-size: 1.3rem;
+  margin-left: 2rem;
+}

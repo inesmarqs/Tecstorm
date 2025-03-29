@@ -21,7 +21,7 @@ export default function BottomBar({ currentPage }: BottomBarProps) {
                     fontSize="large" 
                     style={{ color: currentPage === "cart" ? "#5cecc4" : "white" }} />
                 </Link>
-                <Link href="/black-list" className="bottom-bar-icon">
+                <Link href="/BlackList" className="bottom-bar-icon">
                     <ListAltIcon 
                     fontSize="large" 
                     style={{ color: currentPage === "black-list" ? "#5cecc4" : "white" }} />
