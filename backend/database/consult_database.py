@@ -1,5 +1,5 @@
 """Consults the database and prints all the data in the shopwise database."""
-from models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart
+from database.models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -64,7 +64,6 @@ def print_all_products():
                   f"Product Name: {product.name}, "
                   f"Product Brand: {product.brand}, "
                   f"Product Price: {product.price}, "
-                  f"Product Nutricional Information ID: {product.nutricional_information_id}, "
                   f"Product Weight: {product.weight}, "
                   f"Product Store Location: {product.store_location}"
                   )
@@ -95,6 +94,7 @@ def print_all_nutricional_information():
         print("--------------------------------------------------------------\Nutricional Informations:")
         for information in informations:
             print(f"Nutricional Information ID: {information.id}, "
+                  f"Product ID: {information.product_id}, "
                   f"Energy KJ: {information.energy_kj}, "
                   f"Energy KCal: {information.energy_kcal}, "
                   f"Lipids: {information.lipids}, "

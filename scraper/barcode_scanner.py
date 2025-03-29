@@ -134,7 +134,7 @@ def scrape(category_url, wait_time=30, categoria=None):
 
 
         products = driver.find_elements(By.CSS_SELECTOR, 'a[href^="/produto"], a[href^="https://www.continente.pt/produto"]')
-        file = open("{}.txt".format(categoria), "w")
+        file = open("text/{}.txt".format(categoria), "w")
         for product in products:
             href = product.get_attribute("href")
             if href:

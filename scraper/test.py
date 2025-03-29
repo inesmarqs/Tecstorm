@@ -37,7 +37,7 @@ def scrape(category_url, wait_time=30, categoria=None):
             driver.quit()
             return list(product_links)
 
-        print(f"Iniciando paginação para a categoria: {category_url}")
+        print(f"Iniciar paginação para a categoria: {category_url}")
 
         while True:
             # Remover possíveis banners de cookies
@@ -64,36 +64,28 @@ def scrape(category_url, wait_time=30, categoria=None):
             except Exception as ex:
                 print("Não foi possível ler o contador de produtos:", ex)
 
-            # Se já carregou todos os produtos ou não conseguiu ler contagem, encerra
+            # Se já carregou todos os produtos (ou não há contagem confiável), encerra
             if total_count > 0 and current_count >= total_count:
                 print("Todos os produtos foram carregados.")
                 break
 
-            # Tentar encontrar e clicar no botão "Ver mais produtos"
+            # Tentar encontrar e clicar no botão "Ver mais produtos" (via texto)
             try:
-                more_button = WebDriverWait(driver, wait_time).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, "button.search-view-more-products-button"))
+                ver_mais_button = WebDriverWait(driver, wait_time).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Ver mais produtos')]"))
                 )
-                # Rolando especificamente até o botão, para não "perder" o clique
-                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", more_button)
-                time.sleep(1)  # Pequena pausa para garantir que a rolagem aconteceu
-                more_button.click()
-                time.sleep(2)  # Esperar carregamento dos novos produtos
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", ver_mais_button)
+                time.sleep(1)  # pausa para garantir que a rolagem aconteceu
+                ver_mais_button.click()
+                time.sleep(2)  # tempo para os novos produtos carregarem
             except Exception as e:
                 print("Botão 'Ver mais produtos' não encontrado ou não está clicável:", e)
 
-                # Após tentar clicar, verificamos a contagem novamente.
-                # Se ainda não carregou tudo, mas não encontramos o botão, provavelmente
-                # ele está fora de alcance ou a página não carrega mais produtos.
-                try:
-                    if total_count > 0 and current_count < total_count:
-                        print("Ainda há produtos para carregar, mas o botão não está disponível.")
-                    else:
-                        print("Não há mais produtos ou não foi possível carregar mais.")
-                except Exception as ex:
-                    print("Erro ao checar contagem após falha no clique:", ex)
-
-                # Encerra o loop se não for possível avançar
+                # Verifica se ainda faltam produtos
+                if total_count > 0 and current_count < total_count:
+                    print("Ainda há produtos para carregar, mas o botão não está disponível.")
+                else:
+                    print("Não há mais produtos ou não foi possível carregar mais.")
                 break
 
         # Coletar todos os links de produtos após carregar tudo
@@ -107,7 +99,7 @@ def scrape(category_url, wait_time=30, categoria=None):
             print("Erro ao carregar os produtos:", e)
 
         products = driver.find_elements(By.CSS_SELECTOR, 'a[href^="/produto"], a[href^="https://www.continente.pt/produto"]')
-        
+
         # Salvar em arquivo (um por categoria, caso queira)
         file = open(f"{categoria}.txt", "w", encoding="utf-8")
         for product in products:
@@ -120,6 +112,7 @@ def scrape(category_url, wait_time=30, categoria=None):
         file.close()
 
         driver.quit()
+
     return list(product_links)
 
 
@@ -127,7 +120,7 @@ def main():
     results = {}
     for categoria in categorias:
         category_url = f"{website}/{categoria}"
-        print("\nIniciando scraping para a categoria:", category_url)
+        print("\nIniciar scraping para a categoria:", category_url)
         links = scrape(category_url, wait_time=30, categoria=categoria)
         results[categoria] = links
         print(f"Total de links coletados para '{categoria}': {len(links)}")

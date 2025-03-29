@@ -1,6 +1,6 @@
 import uuid
 
-from database import Base
+from database.database import Base
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -18,6 +18,8 @@ class Client(Base):
     password = Column(String, nullable=False)
     
     allergens = relationship("Allergen", back_populates="client", cascade="all, delete-orphan")
+    shopping_carts = relationship("ShoppingCart", back_populates="client", cascade="all, delete-orphan")
+
 
 class ShoppingCart(Base):
     """Shopping Cart Table."""
@@ -45,6 +47,9 @@ class NutricionalInformation(Base):
     fiber = Column(Float, nullable=False)
     protein = Column(Float, nullable=False)
     salt = Column(Float, nullable=False)
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
+    product = relationship("Product", back_populates="nutricional_information")
+
 
 
 class Product(Base):
@@ -56,11 +61,11 @@ class Product(Base):
     name = Column(String, nullable=False)
     brand = Column(String, nullable=False)
     price = Column(Float, nullable=False)
-    nutricional_information_id = Column(Integer, ForeignKey("nutricional_information.id", ondelete="CASCADE"))
     weight = Column(Float, nullable=False)
     store_location = Column(String, nullable=False)
-    nutricional_information = relationship("NutricionalInformation")
     ingredients = relationship("Ingredient", back_populates="product", cascade="all, delete-orphan")
+    nutricional_information = relationship("NutricionalInformation", back_populates="product")
+
 
 
 class Ingredient(Base):

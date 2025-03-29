@@ -3,7 +3,7 @@ import os
 import shutil
 from pathlib import Path
 import ai_services
-from database import SessionLocal
+from database.database import SessionLocal
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -39,6 +39,47 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+def example_data():
+    print("1")
+    db = next(get_db())
+    nutricion1 = add_nutricional_info(db,
+        energy_kj = 100,
+        energy_kcal = 50,
+        lipids = 10,
+        saturated_lipids = 5,
+        carbon_hidrats = 20,
+        sugar_carbon_hidrats = 10,
+        fiber = 5,
+        protein = 10,
+        salt = 0,
+        product_id = 1
+    )
+
+    print("2")
+    ingredient1 = Ingredient(
+        id = 1,
+        product_id = 1,
+        name = "gluten"
+    )
+    
+    print("3")
+    product = Product(
+        id = 1,
+        bar_code = "123456789",
+        name = "laranja",
+        brand = "laranja",
+        price = 1.99,
+        weight = 1.0,
+        store_location = "a1",
+    )
+    print("Try to add")
+    
+    add_product(db, bar_code=product.bar_code, name=product.name, brand=product.brand, price=product.price, weight=product.weight, store_location=product.store_location)
+    print(get_product(db, 1))
+    
+    
+    
 
 @app.get("/get/{client_id}/shopping_cart/products")
 async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(get_db)):
@@ -75,3 +116,5 @@ async def login(db: Session = Depends(get_db), username: str = Header(...), pass
     else: 
         client_id = client.id
     return {client_id}
+
+example_data()

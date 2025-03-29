@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart
+from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart
 
 
 # ------------- INSERT COMMANDS -------------
@@ -13,12 +13,12 @@ def add_client(db: Session, name: str, telephone: str, creditcard: str, birth_da
     return db_client.id
 
 
-def add_product(db: Session, bar_code: str, name: str, brand: str, price: float, weight: float, store_location: str, nutricional_info_id: int):
+def add_product(db: Session, bar_code: str, name: str, brand: str, price: float, weight: float, store_location: str):
     """Adds a product to the database."""
     db_product = Product(
         bar_code=bar_code, name=name, brand=brand, price=price, weight=weight, 
-        store_location=store_location, nutricional_information_id=nutricional_info_id
-    )
+        store_location=store_location   
+        )
     db.add(db_product)
     db.commit()
     return db_product.id
@@ -42,12 +42,12 @@ def add_allergen(db: Session, client_id: int, name: str):
 
 def add_nutricional_info(db: Session, energy_kj: float, energy_kcal: float, lipids: float, 
                          saturated_lipids: float, carbon_hidrats: float, sugar_carbon_hidrats: float, 
-                         fiber: float, protein: float, salt: float):
+                         fiber: float, protein: float, salt: float, product_id: int):
     """Adds nutritional information to the database."""
     db_info = NutricionalInformation(
         energy_kj=energy_kj, energy_kcal=energy_kcal, lipids=lipids, saturated_lipids=saturated_lipids, 
         carbon_hidrats=carbon_hidrats, sugar_carbon_hidrats=sugar_carbon_hidrats, fiber=fiber, 
-        protein=protein, salt=salt
+        protein=protein, salt=salt, product_id=product_id
     )
     db.add(db_info)
     db.commit()
