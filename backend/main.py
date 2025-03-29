@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 import ai_services
 from database.database import SessionLocal
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from database.models import Client, Product, Allergen, Ingredient, NutricionalInformation
@@ -118,3 +118,12 @@ async def login(db: Session = Depends(get_db), username: str = Header(...), pass
     return {client_id}
 
 example_data()
+
+@app.post("/addToBlacklist")
+async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: int = Header(...), db: Session = Depends(get_db)):
+    """Add an allergen to a client's blacklist."""
+    client = get_client(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    allergen_id = add_allergen(db=db, client_id=client_id, name=allergen_name)
+    return {"message": f"Allergen '{allergen_name}' added to blacklist successfully", "allergen_id": allergen_id}
