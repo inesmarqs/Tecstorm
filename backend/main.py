@@ -10,8 +10,10 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from database.models import Client, Product, Allergen, Ingredient, NutricionalInformation
 from sqlalchemy.orm import Session
 import json
-import paho.mqtt.client as mqtt
+import time
 import threading
+from mqtt_server import start_mqtt
+from db_session import get_db
 
 from database.commands_database import (
     add_client,
@@ -35,24 +37,6 @@ from database.commands_database import (
 )
 
 app = FastAPI()
-MQTT_BROKER = "test.mosquitto.org"  # Public broker
-MQTT_PORT = 1883
-MQTT_TOPIC = "test/topic"
- 
-# Create an MQTT client instance
-mqtt_client = mqtt.Client()
-
-def get_db():
-    """_get_db_.
-
-    Yields:
-        Session: SQLAlchemy session
-    """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
         
 def populate_db():
     db = next(get_db())
@@ -113,6 +97,7 @@ def populate_db():
         
 def example_data():
     print("1")
+    time.sleep(4)
     db = next(get_db())
     check = get_product(db, 1)
     print(check)
@@ -197,28 +182,7 @@ async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
 
-def on_connect(client, userdata, flags, rc):
-    print("Connected to MQTT Broker")
-    client.subscribe(MQTT_TOPIC)  # Listen for messages from Arduino
-
-def on_message(client, userdata, message):
-    """Handles incoming barcodes from Arduino."""
-    db = SessionLocal()  
-    try:
-        barcode = message.payload.decode()
-        print(f"Received barcode: {barcode}")
-        product = get_product_by_barcode(barcode)
-        if product:
-            client_id = 1  
-            add_shopping_cart(db, client_id=client_id, product_id=product.id)
-            print(f"Added {product.name} to shopping cart for Client {client_id}")
-        else:
-            print(f"Product not found for barcode {barcode}")
-
-    except Exception as e:
-        print(f"Error processing barcode: {e}")
-    finally:
-        db.close() 
-
+mqtt_thread = threading.Thread(target=start_mqtt)
+mqtt_thread.start()
 populate_db()
 example_data()
