@@ -62,6 +62,12 @@ body {
   margin-bottom: 0;
   background-color: rgba(255, 255, 255, 0.2);
 }
+.nav.add{
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 1rem;
+  background-color: #5cecc4;
+}
 
 
 
@@ -200,3 +206,14 @@ body {
 
 }
 
+.add-new-item{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  font-size: medium;
+  font-weight: bold;
+  border-bottom: #0f1d1c66;
+  color: black;
+  gap: 0.2rem;
+}

@@ -5,37 +5,41 @@ import { useRouter } from "next/navigation";
 
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import {useClient} from "../context/ClientContext"; // Adjust the import path as necessary
+import Link from "next/link";
 
 
 
 export default function Login() {
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const router = useRouter(); 
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const router = useRouter();
+    const { setClientId } = useClient();
 
-  const handleLogin = async () => {
-    console.log("Username:", username);
-    console.log("Password:", password);
-    try {
-      const response = await fetch("http://localhost:8000/login", {
-        method: "POST",
-        headers: {
-          "username": username,
-          "password": password,
-        },
-      });
+    const handleLogin = async () => {
+        console.log("Username:", username);
+        console.log("Password:", password);
+        try {
+        const response = await fetch("http://localhost:8000/login", {
+            method: "POST",
+            headers: {
+            "username": username,
+            "password": password,
+            },
+        });
 
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
+        if (!response.ok) {
+            throw new Error("Login failed");
+        }
 
-      const data = await response.json();
-      const clientId = data.client_id;
-      console.log("Logged in as user ID:", clientId);
 
-     
-      router.push(`/BlackList`);
+        const clientId = await response.json();
+        console.log("Client ID:", clientId);
+        setClientId(clientId); 
+        
+        router.push("/BlackList");
+
     } catch (error) {
       console.error("Error during login:", error);
     }
@@ -96,7 +100,7 @@ export default function Login() {
         </Box>
 
         <nav className="nav login primary" onClick={handleLogin}>
-            Login
+            <div >Login</div>
         </nav>
       </div>
     </div>

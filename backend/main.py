@@ -156,8 +156,9 @@ async def login(db: Session = Depends(get_db), username: str = Header(...), pass
     return {client_id}
 
 @app.post("/addToBlacklist")
-async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: int = Header(...), db: Session = Depends(get_db)):
+async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: str = Header(...), db: Session = Depends(get_db)):
     """Add an allergen to a client's blacklist."""
+    client_id = int(client_id)
     client = get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
