@@ -6,3 +6,4 @@ fastapi
 selenium
 bs4
 paho-mqtt
+hbmqtt

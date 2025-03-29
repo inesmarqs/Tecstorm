@@ -1,21 +1,22 @@
-import os
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+import time
 
-def main():
-    #find every file first
-    files = os.listdir()
-    print(files)
-    url_set = set()
-    if "urls.txt" in files:
-        os.remove("urls.txt")
-    final = open("urls.txt", "a+")   
-    for file in files:
-        if file.endswith(".txt"):
-            with open(file, "r") as f:
-                urls = f.read().split()
-            for url in urls:
-                url_set.add(url)
-    final.write("\n".join(url_set) + "\n")
+path = "/usr/local/bin/chromedriver"
+url = "https://www.barcodelookup.com/5449000133328"
 
+options = Options()
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
 
-if __name__ == "__main__":
-    main()
+driver = webdriver.Chrome(service=Service(path), options=options)
+driver.get(url)
+time.sleep(2)
+
+with open("barcode_page.html", "w", encoding="utf-8") as f:
+    f.write(driver.page_source)
+
+driver.quit()
+print("✅ HTML guardado como 'barcode_page.html'")

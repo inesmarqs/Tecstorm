@@ -47,7 +47,7 @@ def get_barcode_from_url(url):
     Fallback para extrair o EAN de um data-url que contenha 'ean=xxxxx'
     """
     try:
-        page_to_scrape = requests.get(url, timeout=5)
+        page_to_scrape = requests.get(url, timeout=8)
     except requests.exceptions.RequestException as e:
         print(f"Ocorreu um erro ao acessar a página: {e}")
         return None
@@ -139,7 +139,7 @@ def get_product_info_from_url(url):
     Retorna um objeto Product com os dados coletados.
     """
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=8)
     except requests.exceptions.RequestException as e:
         print(f"Ocorreu um erro ao acessar a página: {e}")
         return None
@@ -198,7 +198,9 @@ def get_product_info_from_url(url):
         price = offers.get("price")
         reference_num = product_data.get("sku")
         image = product_data.get("image")  # se quiser armazenar
-        
+        if ean == None:
+            print("EAN not found")
+            return None
         return Product(
             name=name,
             url=url,
@@ -261,7 +263,7 @@ def main():
         urls = [line.strip() for line in f if line.strip() and line.strip() not in processed_urls]
     
     # Usando ThreadPoolExecutor para processar URLs em paralelo
-    max_workers = 15  # Ajuste o número de threads conforme necessário
+    max_workers = 5  # Ajuste o número de threads conforme necessário
     with ThreadPoolExecutor(max_workers=max_workers) as executor, \
          open(output_file, "a+") as new_file, \
          open(error_file_path, "a+") as error_file:
@@ -274,12 +276,12 @@ def main():
             url = future_to_url[future]
             try:
                 url_result, product = future.result()
-                if product:
+                if product or product:
                     new_file.write(json.dumps(product.__dict__) + "\n")
                     print(f"Url {url_result} possui EAN: {product.id}")
                 else:
                     error_file.write(url + "\n")
-                    print(f"Erro ao processar URL: {url}")
+                    print(f"Falta de EAN: {url}")
             except Exception as e:
                 error_file.write(url + "\n")
                 print(f"Exceção ao processar URL {url}: {e}")

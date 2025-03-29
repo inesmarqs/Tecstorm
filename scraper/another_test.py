@@ -1,17 +1,157 @@
-import requests
-from bs4 import BeautifulSoup
 import json
+import time
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
 
-url = "https://www.continente.pt/produto/mostarda-com-mel-paladin-5046337.html"
-response = requests.get(url, timeout=5)
-soup = BeautifulSoup(response.text, "html.parser")
+CHROMEDRIVER_PATH = "/usr/local/bin/chromedriver"
+INPUT_JSON = "docs/urls.json"
+OUTPUT_JSON = "docs/urls_enriched.json"
+OUTPUT_PARTIAL_JSON = "docs/urls_enriched_partial.jsonl"
+MID_SAVE = "docs/temp_urls.json"
 
-# Encontra todas as tags que possuem JSON-LD
-scripts = soup.find_all("script", type="application/ld+json")
-for idx, script in enumerate(scripts, start=1):
+def scrape_barcode_info(barcode):
+    url = f"https://www.barcodelookup.com/{barcode}"
+
+    options = Options()
+    # options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(service=Service(CHROMEDRIVER_PATH), options=options)
+    scraped = {"id": barcode}
+
     try:
-        data = json.loads(script.string)
-        print(f"--- JSON-LD {idx} ---")
-        print(json.dumps(data, indent=4, ensure_ascii=False))
+        driver.get(url)
+        time.sleep(2)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+
+        def try_select(selector):
+            el = soup.select_one(selector)
+            return el.text.strip() if el else None
+
+        scraped["nome"] = try_select("h4.product-title")
+        scraped["descricao"] = try_select("div.product-meta-data .product-text")
+
+        scraped["ingredientes"] = None
+        for block in soup.select("div.product-meta-data"):
+            label = block.select_one("div.product-text-label")
+            if label and "Ingredients:" in label.text:
+                scraped["ingredientes"] = label.select_one("span.product-text").text.strip()
+                break
+
+        scraped["nutrientes_texto"] = None
+        for block in soup.select("div.product-meta-data"):
+            label = block.select_one("div.product-text-label")
+            if label and "Nutrition Facts:" in label.text:
+                scraped["nutrientes_texto"] = label.select_one("span.product-text").text.strip()
+                break
+
+        scraped["nutrientes"] = {}
+        for row in soup.select("table.nutrition tr"):
+            cols = row.find_all("td")
+            if len(cols) == 2:
+                label = cols[0].text.strip()
+                value = cols[1].text.strip()
+                scraped["nutrientes"][label] = value
+
+        scraped["atributos"] = {}
+        for li in soup.select("#product-attributes li span"):
+            if ":" in li.text:
+                k, v = li.text.split(":", 1)
+                scraped["atributos"][k.strip()] = v.strip()
+                
+        # ✅ Detalhes extra (brand, etc.)
+        try:
+            for li in soup.select("ul.product-details-list li"):
+                if ":" in li.text:
+                    k, v = li.text.split(":", 1)
+                    scraped[k.strip().lower()] = v.strip()
+        except:
+            pass
+
     except Exception as e:
-        print(f"Erro ao processar JSON-LD {idx}: {e}")
+        scraped["erro_scraping"] = str(e)
+
+    finally:
+        driver.quit()
+
+    # Guardar no ficheiro intermédio (checkpoint)
+    with open(MID_SAVE, "a+", encoding="utf-8") as f:
+        f.write(json.dumps(scraped, ensure_ascii=False) + "\n")
+
+    return scraped
+
+def main():
+    produtos = []
+
+    # Lê os produtos originais
+    with open(INPUT_JSON, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                obj = json.loads(line)
+                if "id" in obj and obj["id"]:
+                    produtos.append(obj)
+            except:
+                continue
+
+    # Ler IDs já presentes no MID_SAVE
+    ids_already_scraped = set()
+    if os.path.exists(MID_SAVE):
+        with open(MID_SAVE, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    obj = json.loads(line)
+                    ids_already_scraped.add(obj["id"])
+                except:
+                    continue
+
+    all_ids = list({p["id"] for p in produtos if "id" in p})
+    ids_to_scrape = [pid for pid in all_ids if pid not in ids_already_scraped]
+
+    total = len(all_ids)
+    remaining_to_scrape = len(ids_to_scrape)
+    counter = 0
+
+    print(f"🔄 A processar {remaining_to_scrape} novos de {total} totais (já processados: {len(ids_already_scraped)})...\n")
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(scrape_barcode_info, pid): pid for pid in ids_to_scrape}
+        for future in as_completed(futures):
+            result = future.result()
+            counter += 1
+            if result.get("nome"):  # Só guarda se tiver nome
+                with open(OUTPUT_PARTIAL_JSON, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+            print(f"✅ [{counter}/{remaining_to_scrape}] {result['id']} - {result.get('nome')} | Faltam: {remaining_to_scrape - counter}")
+
+    # Fundir com os dados originais
+    enriched_final = []
+    enriched_all = {}
+    with open(OUTPUT_PARTIAL_JSON, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                scraped = json.loads(line)
+                enriched_all[scraped["id"]] = scraped
+            except:
+                continue
+
+    for original in produtos:
+        pid = original["id"]
+        if pid in enriched_all:
+            enriched_obj = original.copy()
+            enriched_obj.update(enriched_all[pid])
+            enriched_final.append(enriched_obj)
+
+    # Guardar resultado final
+    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
+        for obj in enriched_final:
+            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
+
+    print(f"\n📦 Enriquecidos guardados: {OUTPUT_JSON} ({len(enriched_final)} produtos válidos de {total})")
+
+if __name__ == "__main__":
+    main()

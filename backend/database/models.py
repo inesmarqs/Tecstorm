@@ -28,7 +28,7 @@ class ShoppingCart(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     client_id = Column(Integer, ForeignKey("client.id", ondelete="CASCADE"), nullable=False)
     product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
-    quantity = Column(Integer, nullable=False, default=1)
+    uid = Column(String, nullable=False)
 
     client = relationship("Client", back_populates="shopping_carts")
     product = relationship("Product")

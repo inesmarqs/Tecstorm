@@ -74,3 +74,5 @@ config/secrets.yml
 
 # Docker
 .dockerignore
+
+robot/*

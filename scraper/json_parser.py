@@ -12,6 +12,8 @@ def filter_json_lines(input_path="docs/urls.json", output_path="docs/urls_filter
                 # Only keep the object if its "id" is not null
                 if obj.get("id") is not None:
                     filtered_objects.append(obj)
+                elif obj.get("name") is not None:
+                    filtered_objects.append(obj)
             except json.JSONDecodeError:
                 # Skip lines that are not valid JSON
                 continue

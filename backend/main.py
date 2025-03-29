@@ -43,7 +43,7 @@ def populate_db():
     category = add_category(db, "frutas")
     
     client_id = add_client(db, "user1", "915193363", "22222222222", "12-12-1980", "password")
-    shopping_cart = add_shopping_cart(db, client_id, 1)
+    shopping_cart = add_shopping_cart(db, client_id, 1, 1)
     allergens = add_allergen(db, client_id, "gluten")
     
     nutricion1 = add_nutricional_info(db,
@@ -94,6 +94,12 @@ def populate_db():
     add_nutricional_info(db,
         energy_kj = 100,
         energy_kcal = 50, lipids=10, saturated_lipids=5, carbon_hidrats=20, sugar_carbon_hidrats=10, fiber=5, protein=10, salt=0, product_id=1)
+    
+    
+def test_add_product():
+    db = next(get_db())
+    add_category(db, "bebidas")
+    add_product(db, bar_code="5449000054227", name="coca cola normal", brand="coca cola", price=1.99, weight=1.0, store_location="a1", category_id=1)
         
 def example_data():
     print("1")
@@ -182,7 +188,9 @@ async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
 
+
 mqtt_thread = threading.Thread(target=start_mqtt)
 mqtt_thread.start()
-populate_db()
-example_data()
+#populate_db()
+test_add_product()
+#example_data()

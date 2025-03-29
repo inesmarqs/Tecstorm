@@ -53,9 +53,9 @@ def add_nutricional_info(db: Session, energy_kj: float, energy_kcal: float, lipi
     db.commit()
     return db_info.id
 
-def add_shopping_cart(db: Session, client_id: int, product_id: int):
+def add_shopping_cart(db: Session, client_id: int, product_id: int, uid: int):
     """Adds shopping cart information to the database."""
-    db_info = ShoppingCart(client_id=client_id, product_id=product_id)
+    db_info = ShoppingCart(client_id=client_id, product_id=product_id, uid=uid)
     db.add(db_info)
     db.commit()
     return db_info.id
@@ -66,6 +66,20 @@ def add_category(db: Session, name: str):
     db.add(db_category)
     db.commit()
     return db_category.id
+
+def remove_shopping_cart(db: Session, client_id: int, product_id: int, uid: int):
+    print(f"🧹 Removendo item: {client_id}, {product_id}, {uid}")
+    deleted = db.query(ShoppingCart).filter(
+        ShoppingCart.client_id == client_id,
+        ShoppingCart.product_id == product_id,
+        ShoppingCart.uid == uid
+    ).delete()
+
+    db.commit()
+
+    print(f"🧹 Itens apagados: {deleted}")
+
+    return
 
 # ------------- GET COMMANDS -------------
 
@@ -79,6 +93,13 @@ def get_client(db: Session, client_id: int):
 def get_product(db: Session, product_id: int):
     """Retrieves a product by ID."""
     product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+def get_product_by_barcode(db: Session, bar_code: str):
+    """Retrieves a product by bar code."""
+    product = db.query(Product).filter(Product.bar_code == bar_code).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
@@ -125,21 +146,35 @@ def get_product_by_barcode(db: Session, barcode: int):
     """Retrieved the product given a bar code"""
     product = db.query(Product).filter(Product.bar_code==barcode).one()
     if not product: 
-        raise HTTPException(status_code=404, details="Product not found for this bar code.")
+        raise HTTPException(status_code=404, detail="Product not found for this bar code.")
     return product
 
 def get_product_by_category(db: Session, category_id: int):
     """Retrieved the product given a category"""
     product = db.query(Product).filter(Product.category_id==category_id).all()
     if not product: 
-        raise HTTPException(status_code=404, details="Product not found for this category.")
+        raise HTTPException(status_code=404, detail="Product not found for this category.")
     return product
 
 def get_product_by_category_without_blacklisted(db: Session, category_id: int, problem_id: int):
     """Retrieved the product given a category"""
     product = db.query(Product).filter(Product.category_id==category_id, Product.id != problem_id).all()
     if not product: 
-        raise HTTPException(status_code=404, details="Product not found for this category.")
+        raise HTTPException(status_code=404, detail="Product not found for this category.")
+    return product
+
+def get_shopping_cart_items(db: Session, client_id: int):
+    """Retrieved every shopping cart product"""
+    product = db.query(ShoppingCart).filter(ShoppingCart.client_id==client_id).all()
+    if not product: 
+        raise HTTPException(status_code=404, detail="Product not found in the shopping cart")
+    return product
+
+def get_shopping_cart_item_by_uid(db: Session, uid: int):
+    """Retrieved shopping cart product by uid tag"""
+    product = db.query(ShoppingCart).filter(ShoppingCart.uid==uid).all()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product was not in the cart")
     return product
 
 #-----------------------DELETE COMMANDS------------------------

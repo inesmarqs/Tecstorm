@@ -1,9 +1,11 @@
 # mqtt_server.py
 import paho.mqtt.client as mqtt
 from db_session import get_db
-from database.commands_database import get_product_by_barcode, add_shopping_cart
+from database.commands_database import get_product_by_barcode, add_shopping_cart, remove_shopping_cart, get_shopping_cart_item_by_uid, get_shopping_cart_items
+import json
+from fastapi import HTTPException
 
-MQTT_BROKER = "test.mosquitto.org"
+MQTT_BROKER = "127.0.0.1"  # O broker corre localmente no teu PC
 MQTT_PORT = 1883
 MQTT_TOPIC = "test/tecstorm"
 
@@ -16,9 +18,34 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, message):
     db = next(get_db())
-    print(f"Receber mensagem: {message.payload.decode()}")
-    #TODO
+    try:
+        raw = message.payload.decode()         # <- transforma bytes em string
+        print(f"📩 Mensagem recebida: {raw}")
 
+        msg = json.loads(raw)                  # <- transforma string JSON em dicionário
+
+        uid = msg["uid"]
+        barcode = msg["barcode"]
+
+        product = get_product_by_barcode(db, barcode)
+        try:
+            check = get_shopping_cart_item_by_uid(db, uid)
+        except HTTPException:
+            check = None
+
+        if check:
+            remove_shopping_cart(db, 1, product.id, check[0].uid)  # TODO: usar client real
+            print(f"🛒 Produto '{product.name}' removido (uid={uid})")
+        else:
+            add_shopping_cart(db, 1, product.id, uid)
+            print(f"🛒 Produto '{product.name}' adicionado (uid={uid})")
+
+    except Exception as e:
+        print(f"❌ Erro ao processar mensagem MQTT: {e}")
+    finally:
+        db.close()
+
+        
 def start_mqtt():
     client = mqtt.Client()
     client.on_connect = on_connect
