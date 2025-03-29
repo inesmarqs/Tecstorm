@@ -2,8 +2,11 @@
 import paho.mqtt.client as mqtt
 from db_session import get_db
 from database.commands_database import get_product_by_barcode, add_shopping_cart, remove_shopping_cart, get_shopping_cart_item_by_uid, get_shopping_cart_items
+from ai_services import add_product_use_ai
 import json
+import threading
 from fastapi import HTTPException
+from websocket_manager import notify_clients
 
 MQTT_BROKER = "127.0.0.1"  # O broker corre localmente no teu PC
 MQTT_PORT = 1883
@@ -37,7 +40,7 @@ def on_message(client, userdata, message):
             remove_shopping_cart(db, 1, product.id, check[0].uid)  # TODO: usar client real
             print(f"🛒 Produto '{product.name}' removido (uid={uid})")
         else:
-            add_shopping_cart(db, 1, product.id, uid)
+            threading.Thread(target=add_product_use_ai, args=(product, uid)).start()
             print(f"🛒 Produto '{product.name}' adicionado (uid={uid})")
 
     except Exception as e:

@@ -1,5 +1,5 @@
 """Consults the database and prints all the data in the shopwise database."""
-from database.models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart, Category
+from database.models import Client, NutricionalInformation, Product, Ingredient, Allergen, ShoppingCart, Category, Recommendations
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -14,11 +14,11 @@ def print_all_clients():
         clients = db.query(Client).all()
         print("-------------------------------------------------------------- Clients:")
         for client in clients:
-            print(f"Client ID: {client.id},"
-                  f"Client Name: {client.name},"
-                  f"Client Telephone: {client.telephone},"
-                  f"Client CreditCard: {client.credit_card},"
-                  f"Client Birth Date: {client.birth_date},"
+            print(f"Client ID: {client.id}, "
+                  f"Client Name: {client.name}, "
+                  f"Client Telephone: {client.telephone}, "
+                  f"Client CreditCard: {client.credit_card}, "
+                  f"Client Birth Date: {client.birth_date}, "
                   f"Client Password: {client.password}"
                 )
     finally:
@@ -31,9 +31,10 @@ def print_all_shopping_carts():
         carts = db.query(ShoppingCart).all()
         print("------------------------------------------------------------- Shopping Carts:")
         for cart in carts:
-            print(f"Shopping Cart ID: {cart.id},"
-                  f"Shooping Cart Client ID: {cart.client_id},"
-                  f"Shooping Cart Product ID: {cart.product_id}"
+            print(f"Shopping Cart ID: {cart.id}, "
+                  f"Shopping Cart Client ID: {cart.client_id}, "
+                  f"Shopping Cart Product ID: {cart.product_id}, "
+                  f"Shopping Cart Valid Product: {cart.success}"
                   )
     finally:
         db.close()
@@ -45,7 +46,7 @@ def print_all_allergens():
         allergens = db.query(Allergen).all()
         print("-------------------------------------------------------------- Allergens:")
         for allergen in allergens:
-            print(f"Allergen ID: {allergen.id},"
+            print(f"Allergen ID: {allergen.id}, "
                   f"Allergen Client ID: {allergen.client_id}, "
                   f"Allergen Name: {allergen.name}"
                 )
@@ -114,8 +115,23 @@ def print_all_categories():
         categories = db.query(Category).all()
         print("-------------------------------------------------------------- Categories:")
         for category in categories:
-            print(f"Category ID: {category.id},"
+            print(f"Category ID: {category.id}, "
                   f"Category Name: {category.name}"
+                )
+    finally:
+        db.close()
+        
+def print_all_recommendations():
+    """Prints all the recommendations in the shopwise database."""
+    db = SessionLocal()
+    try:
+        recommendations = db.query(Recommendations).all()
+        print("-------------------------------------------------------------- Recommendations:")
+        for recommendation in recommendations:
+            print(f"Recommendation ID: {recommendation.id}, "
+                  f"Recommendation Client ID: {recommendation.client_id}, "
+                  f"Recommendation Product ID that failed: {recommendation.product_id}, "
+                  f"Recommendation recommended Product ID: {recommendation.product_recommended_id}"
                 )
     finally:
         db.close()
@@ -127,3 +143,6 @@ if __name__ == "__main__":
     print_all_products()
     print_all_ingredients()
     print_all_nutricional_information()
+    print_all_shopping_carts()
+    print_all_categories()
+    print_all_recommendations()

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart, Category
+from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart, Category, Recommendations
+from db_session import get_db
 
 
 # ------------- INSERT COMMANDS -------------
@@ -53,9 +54,9 @@ def add_nutricional_info(db: Session, energy_kj: float, energy_kcal: float, lipi
     db.commit()
     return db_info.id
 
-def add_shopping_cart(db: Session, client_id: int, product_id: int, uid: int):
+def add_shopping_cart(db: Session, client_id: int, product_id: int, uid: int, success: bool):
     """Adds shopping cart information to the database."""
-    db_info = ShoppingCart(client_id=client_id, product_id=product_id, uid=uid)
+    db_info = ShoppingCart(client_id=client_id, product_id=product_id, uid=uid, success=success)
     db.add(db_info)
     db.commit()
     return db_info.id
@@ -68,6 +69,7 @@ def add_category(db: Session, name: str):
     return db_category.id
 
 def remove_shopping_cart(db: Session, client_id: int, product_id: int, uid: int):
+    
     print(f"🧹 Removendo item: {client_id}, {product_id}, {uid}")
     deleted = db.query(ShoppingCart).filter(
         ShoppingCart.client_id == client_id,
@@ -80,6 +82,13 @@ def remove_shopping_cart(db: Session, client_id: int, product_id: int, uid: int)
     print(f"🧹 Itens apagados: {deleted}")
 
     return
+
+def add_recommendations(db, client_id, product_id, product_recommended_id):
+    db = next(get_db()) 
+    db_info = Recommendations(client_id=client_id, product_id=product_id, product_recommended_id=product_recommended_id)
+    db.add(db_info)
+    db.commit()
+    return db_info.id
 
 # ------------- GET COMMANDS -------------
 

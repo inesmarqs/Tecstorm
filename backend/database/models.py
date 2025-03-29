@@ -1,7 +1,7 @@
 import uuid
 
 from database.database import Base
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Date
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Date, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -19,6 +19,7 @@ class Client(Base):
     
     allergens = relationship("Allergen", back_populates="client", cascade="all, delete-orphan")
     shopping_carts = relationship("ShoppingCart", back_populates="client", cascade="all, delete-orphan")
+    recommendations = relationship("Recommendations", back_populates="client", cascade="all, delete-orphan")
 
 
 class ShoppingCart(Base):
@@ -29,6 +30,7 @@ class ShoppingCart(Base):
     client_id = Column(Integer, ForeignKey("client.id", ondelete="CASCADE"), nullable=False)
     product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
     uid = Column(String, nullable=False)
+    success = Column(Boolean, nullable=False)
 
     client = relationship("Client", back_populates="shopping_carts")
     product = relationship("Product")
@@ -74,6 +76,9 @@ class Product(Base):
     ingredients = relationship("Ingredient", back_populates="product", cascade="all, delete-orphan")
     nutricional_information = relationship("NutricionalInformation", back_populates="product")
     category = relationship("Category", back_populates="products")
+    recommendations_problem = relationship("Recommendations", foreign_keys="[Recommendations.product_id]", back_populates="product", cascade="all, delete-orphan")
+    recommendations_solution = relationship("Recommendations", foreign_keys="[Recommendations.product_recommended_id]", back_populates="product_recommended", cascade="all, delete-orphan")
+    
 
 class Ingredient(Base):
     """Ingredient Table."""
@@ -95,3 +100,18 @@ class Allergen(Base):
     name = Column(String, nullable=False)
 
     client = relationship("Client", back_populates="allergens")
+    
+class Recommendations(Base):
+    """Recommendations Table."""
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    client_id = Column(Integer, ForeignKey("client.id", ondelete="CASCADE"))
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"))
+    product_recommended_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE")) 
+
+    # Relações com especificação de chave estrangeira
+    product = relationship("Product", foreign_keys=[product_id], back_populates="recommendations_problem")
+    product_recommended = relationship("Product", foreign_keys=[product_recommended_id], back_populates="recommendations_solution")
+    client = relationship("Client", back_populates="recommendations")
+

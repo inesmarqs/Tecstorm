@@ -2,9 +2,10 @@ import asyncio
 import os
 import shutil
 from pathlib import Path
-#import ai_services
+import ai_services
 from database.database import SessionLocal
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body, WebSocket
+from websocket_manager import connect_client, disconnect_client
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from database.models import Client, Product, Allergen, Ingredient, NutricionalInformation
@@ -12,7 +13,7 @@ from sqlalchemy.orm import Session
 import json
 import time
 import threading
-#from mqtt_server import start_mqtt
+from mqtt_server import start_mqtt
 from db_session import get_db
 
 from database.commands_database import (
@@ -107,8 +108,13 @@ def populate_db():
     
 def test_add_product():
     db = next(get_db())
+    client = add_client(db, "user1", "915193363", "22222222222", "12-12-1980", "password")
+    alle = add_allergen(db, client, "gluten")
     add_category(db, "bebidas")
     add_product(db, bar_code="5449000054227", name="coca cola normal", brand="coca cola", price=1.99, weight=1.0, store_location="a1", category_id=1)
+    add_ingredient(db, 1, "gluten")
+    add_product(db, bar_code="123456781", name="banana", brand="banana", price=1.99, weight=1.0, store_location="a1", category_id=1)
+    add_ingredient(db, 2, "banana")
         
 #def example_data():
 #    print("1")
@@ -150,6 +156,15 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
         yield content  
 
     return StreamingResponse(iter_content(), media_type="application/json")
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await connect_client(websocket)
+    try:
+        while True:
+            await websocket.receive_text()  # apenas mantém a ligação ativa
+    except:
+        disconnect_client(websocket)
 
 @app.post("/login")
 async def login(db: Session = Depends(get_db), username: str = Header(...), password: str = Header(...)):
