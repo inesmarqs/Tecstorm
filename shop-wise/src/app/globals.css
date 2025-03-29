@@ -47,10 +47,12 @@ body {
   margin-top: 3rem;
   margin-bottom: 3rem;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+  height: 1rem;
+  width: 4rem;
+  color: #0f1d1c;
 }
 
 .nav.primary {
-  color: white;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
   background-color: #5cecc4;
 }
@@ -59,6 +61,12 @@ body {
   margin-top: 5rem;
   margin-bottom: 0;
   background-color: rgba(255, 255, 255, 0.2);
+}
+.nav.add{
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 1rem;
+  background-color: #5cecc4;
 }
 
 
@@ -198,3 +206,14 @@ body {
 
 }
 
+.add-new-item{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  font-size: medium;
+  font-weight: bold;
+  border-bottom: #0f1d1c66;
+  color: black;
+  gap: 0.2rem;
+}

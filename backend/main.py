@@ -2,7 +2,7 @@ import asyncio
 import os
 import shutil
 from pathlib import Path
-import ai_services
+#import ai_services
 from database.database import SessionLocal
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 import json
 import time
 import threading
-from mqtt_server import start_mqtt
+#from mqtt_server import start_mqtt
 from db_session import get_db
 
 from database.commands_database import (
@@ -37,6 +37,15 @@ from database.commands_database import (
 )
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
         
 def populate_db():
     db = next(get_db())
@@ -101,19 +110,19 @@ def test_add_product():
     add_category(db, "bebidas")
     add_product(db, bar_code="5449000054227", name="coca cola normal", brand="coca cola", price=1.99, weight=1.0, store_location="a1", category_id=1)
         
-def example_data():
-    print("1")
-    time.sleep(4)
-    db = next(get_db())
-    check = get_product(db, 1)
-    print(check)
-    client = get_client(db, 1)
-    response = ai_services.is_product_suitable(check.name, get_ingredients_by_product(db, check.id), get_allergens_by_client(db, client.id))
-    if response.lower() == "no":
-        recommendations = ai_services.get_product_recommendations(check, get_product_by_category_without_blacklisted(db, check.category_id, check.id), get_allergens_by_client(db, client.id))
-        print(recommendations)
-    else:
-        print("Product is suitable")
+#def example_data():
+#    print("1")
+#    time.sleep(4)
+#    db = next(get_db())
+#    check = get_product(db, 1)
+#    print(check)
+#    client = get_client(db, 1)
+#    response = ai_services.is_product_suitable(check.name, get_ingredients_by_product(db, check.id), get_allergens_by_client(db, client.id))
+#    if response.lower() == "no":
+#        recommendations = ai_services.get_product_recommendations(check, get_product_by_category_without_blacklisted(db, check.category_id, check.id), get_allergens_by_client(db, client.id))
+#        print(recommendations)
+#    else:
+#        print("Product is suitable")
     
     
     
@@ -153,8 +162,9 @@ async def login(db: Session = Depends(get_db), username: str = Header(...), pass
     return {client_id}
 
 @app.post("/addToBlacklist")
-async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: int = Header(...), db: Session = Depends(get_db)):
+async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: str = Header(...), db: Session = Depends(get_db)):
     """Add an allergen to a client's blacklist."""
+    client_id = int(client_id)
     client = get_client(db, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")

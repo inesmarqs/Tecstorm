@@ -12,7 +12,7 @@ def print_all_clients():
     db = SessionLocal()
     try:
         clients = db.query(Client).all()
-        print("--------------------------------------------------------------\Clients:")
+        print("-------------------------------------------------------------- Clients:")
         for client in clients:
             print(f"Client ID: {client.id},"
                   f"Client Name: {client.name},"
@@ -29,7 +29,7 @@ def print_all_shopping_carts():
     db = SessionLocal()
     try:
         carts = db.query(ShoppingCart).all()
-        print("-------------------------------------------------------------\Shopping Carts:")
+        print("------------------------------------------------------------- Shopping Carts:")
         for cart in carts:
             print(f"Shopping Cart ID: {cart.id},"
                   f"Shooping Cart Client ID: {cart.client_id},"
@@ -43,7 +43,7 @@ def print_all_allergens():
     db = SessionLocal()
     try:
         allergens = db.query(Allergen).all()
-        print("--------------------------------------------------------------\nAllergens:")
+        print("-------------------------------------------------------------- Allergens:")
         for allergen in allergens:
             print(f"Allergen ID: {allergen.id},"
                   f"Allergen Client ID: {allergen.client_id}, "
@@ -57,7 +57,7 @@ def print_all_products():
     db = SessionLocal()
     try:
         products = db.query(Product).all()
-        print("--------------------------------------------------------------\Products:")
+        print("-------------------------------------------------------------- Products:")
         for product in products:
             print(f"Product ID: {product.id}, "
                   f"Product Bar Code: {product.bar_code}, "
@@ -75,7 +75,7 @@ def print_all_ingredients():
     db = SessionLocal()
     try:
         ingredients = db.query(Ingredient).all()
-        print("--------------------------------------------------------------\Ingredients:")
+        print("-------------------------------------------------------------- Ingredients:")
         for ingredient in ingredients:
             print(f"Ingredient ID: {ingredient.id}, " 
                   f"Ingredient Product ID: {ingredient.product_id}, " 
@@ -91,7 +91,7 @@ def print_all_nutricional_information():
     db = SessionLocal()
     try:
         informations = db.query(NutricionalInformation).all()
-        print("--------------------------------------------------------------\Nutricional Informations:")
+        print("-------------------------------------------------------------- Nutricional Informations:")
         for information in informations:
             print(f"Nutricional Information ID: {information.id}, "
                   f"Product ID: {information.product_id}, "
@@ -112,7 +112,7 @@ def print_all_categories():
     db = SessionLocal()
     try:
         categories = db.query(Category).all()
-        print("--------------------------------------------------------------\Categories:")
+        print("-------------------------------------------------------------- Categories:")
         for category in categories:
             print(f"Category ID: {category.id},"
                   f"Category Name: {category.name}"
@@ -122,8 +122,8 @@ def print_all_categories():
         
 
 if __name__ == "__main__":
-    print_all_clients();
-    print_all_allergens();
-    print_all_products();
-    print_all_ingredients();
-    print_all_nutricional_information();
+    print_all_clients()
+    print_all_allergens()
+    print_all_products()
+    print_all_ingredients()
+    print_all_nutricional_information()
