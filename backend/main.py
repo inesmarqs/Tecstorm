@@ -146,9 +146,9 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
             "name": product.name,
             "brand": product.brand,
             "price": product.price,
-            "quantity": item.quantity,  
             "weight": product.weight,
-            "store_location": product.store_location
+            "store_location": product.store_location,
+            "product flagged": item.success
         })
 
     def iter_content():
@@ -219,16 +219,15 @@ async def pay(client_id: int = Header(...), db: Session = Depends(get_db)):
     return {"message": "All items removed from shopping cart successfully!"}
 
 @app.get("/takeMeThere")
-async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_db)):
+async def takeMeThere(prodcut_id: str = Header(...), db: Session = Depends(get_db)):
     """Gets product location"""
-    
-    product = get_product(db, prodcut_id)
+    product = get_product(db, int(prodcut_id))
 
     if not product:
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
 
-
+        
 mqtt_thread = threading.Thread(target=start_mqtt)
 mqtt_thread.start()
 #populate_db()
