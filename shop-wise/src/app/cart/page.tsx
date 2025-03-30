@@ -8,7 +8,8 @@ export default function Cart() {
     const [messages, setMessages] = useState<string[]>([]);
     
       useEffect(() => {
-        const socket = new WebSocket("ws://193.236.212.127:8000/ws"); 
+        const socket = new WebSocket("ws://192.168.1.136:8000/ws");
+ 
     
         socket.onopen = () => {
           console.log("Connected to WebSocket server");
@@ -44,7 +45,7 @@ export default function Cart() {
                 <div className="your-black-list-text">Your Shopping Cart: </div>
                 <div className="black-list-items-container"></div>
                 <h2>WebSocket Messages</h2>
-                    <ul>
+                    <ul style={{color: "black"}}>
                         {messages.map((msg, index) => (
                         <li key={index}>{msg}</li>
                         ))}

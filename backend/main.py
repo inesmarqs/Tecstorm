@@ -2,7 +2,7 @@ import asyncio
 import os
 import shutil
 from pathlib import Path
-#import ai_services
+import ai_services
 from database.database import SessionLocal
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body, WebSocket
 from websocket_manager import connect_client, disconnect_client
@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 import json
 import time
 import threading
-#from mqtt_server import start_mqtt
+from mqtt_server import start_mqtt
 from db_session import get_db
 from websocket_manager import notify_client
 
@@ -109,11 +109,14 @@ def populate_db():
     
 def test_add_product():
     db = next(get_db())
+    print("check")
     client = add_client(db, "user1", "915193363", "22222222222", "12-12-1980", "password")
     alle = add_allergen(db, client, "gluten")
     add_category(db, "bebidas")
+    print("1")
     add_product(db, bar_code="5449000054227", name="coca cola normal", brand="coca cola", price=1.99, weight=1.0, store_location="a1", category_id=1)
     add_ingredient(db, 1, "gluten")
+    print("2")
     add_product(db, bar_code="123456781", name="banana", brand="banana", price=1.99, weight=1.0, store_location="a1", category_id=1)
     add_ingredient(db, 2, "banana")
         
@@ -160,8 +163,7 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await connect_client(websocket,1)
-    notify_client(1, "ADD")
+    await connect_client(websocket,"1")
     try:
         while True:
             await websocket.receive_text()  # apenas mantém a ligação ativa

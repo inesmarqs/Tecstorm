@@ -3,6 +3,8 @@ from groq import Groq
 from dotenv import load_dotenv
 from db_session import get_db
 from database.commands_database import add_shopping_cart, get_product_by_category_without_blacklisted, get_client, get_shopping_cart_items, get_product, add_recommendations
+from websocket_manager import notify_client
+import asyncio
 
 load_dotenv()
 
@@ -29,6 +31,7 @@ def add_product_use_ai(product, uid):
             print(e)
             print("No recommendations")
     add_shopping_cart(db, 1, product.id, uid, success)
+    asyncio.run(notify_client("1", "ADD")) 
     for item in get_shopping_cart_items(db, 1):
         print(item.product.name)
     

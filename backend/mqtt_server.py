@@ -6,7 +6,7 @@ from ai_services import add_product_use_ai
 import json
 import threading
 from fastapi import HTTPException
-from websocket_manager import notify_clients
+from websocket_manager import notify_client
 
 MQTT_BROKER = "127.0.0.1"  # O broker corre localmente no teu PC
 MQTT_PORT = 1883

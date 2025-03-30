@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart, Category, Recommendations
 from db_session import get_db
+from sqlalchemy.exc import IntegrityError
+
 
 
 # ------------- INSERT COMMANDS -------------
@@ -21,7 +23,11 @@ def add_product(db: Session, bar_code: str, name: str, brand: str, price: float,
         store_location=store_location, category_id=category_id   
         )
     db.add(db_product)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        print("Produto já existente, ignorado.")
     return db_product.id
 
 
