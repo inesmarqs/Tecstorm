@@ -32,7 +32,7 @@ export default function BlackList() {
         }
     
         try {
-        const response = await fetch("http://localhost:8000/addToBlacklist", {
+        const response = await fetch("http://193.236.212.127:8000/addToBlackList", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json", 
@@ -60,6 +60,19 @@ export default function BlackList() {
   // Handle deleting an item from the blacklist
   const handleDeleteItem = (itemToDelete: string) => {
     setBlacklist(blacklist.filter(item => item !== itemToDelete));
+
+    try{
+        fetch("http://193.236.212.127:8000/removeFromBlackList", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "client-id": String(clientId),
+            },
+            body: JSON.stringify(itemToDelete),
+        });
+    }catch(error){
+        console.error("Error deleting item:", error);
+    }
   };
 
   // Show add item form
@@ -98,7 +111,7 @@ export default function BlackList() {
                   padding: "10px",
                   cursor: "pointer",
                 }}
-                onClick={() => handleDeleteItem(item)} // Delete item when clicked
+                onClick={() => handleDeleteItem(item)} 
               />
             </div>
           ))}
