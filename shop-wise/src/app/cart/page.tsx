@@ -122,7 +122,7 @@ export default function Cart() {
               <li
                 key={index}
                 style={{
-                  color: item.product_flagged ? "black" : "orange",
+                  color: item.product_flagged ? "black" : "red",
                   fontWeight: item.product_flagged ? "bold" : "normal",
                 }}
               >
