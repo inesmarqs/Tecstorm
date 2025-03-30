@@ -37,7 +37,7 @@ from database.commands_database import (
     get_product_by_category_without_blacklisted,
     delete_shopping_cart_items,
     delete_recommendations,
-    get_recommendations_by_product_id
+    get_recommendations_by_product_id,
 )
 
 app = FastAPI()
@@ -301,6 +301,13 @@ async def takeMeThere(prodcut_id: str = Header(...), db: Session = Depends(get_d
     if not product:
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
+
+@app.get("/getBlackList")
+async def getBlackList(client_id: str = Header(...), db: Session = Depends(get_db)):
+    """Gets the client's blacklist of allergens."""
+    allergens = get_allergens_by_client(db, int(client_id))
+    allergens_list = [allergen.name for allergen in allergens]
+    return {"blacklist": allergens_list}
 
 @app.get("/recommendations")
 async def get_recommendations_for_product_and_client(
