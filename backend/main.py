@@ -134,29 +134,84 @@ def test_add_product():
 #    else:
 #        print("Product is suitable")
     
+def calculate_cart_total(client_id: int, db: Session):
+    shopping_cart_items = get_shopping_cart_by_client(db, client_id)
+    if not shopping_cart_items:
+        raise ValueError(f"No products found in shopping cart for client {client_id}.")
     
+    total_price = 0
+    product_quantity_map = {}  
     
+    for item in shopping_cart_items:
+        if item.product_id in product_quantity_map:
+            product_quantity_map[item.product_id] += 1
+        else:
+            product_quantity_map[item.product_id] = 1
+    
+    for product_id, quantity in product_quantity_map.items():
+        product = db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            raise ValueError(f"Product with ID {product_id} not found.")
+        
+        total_price += product.price * quantity  
+    return total_price
+
+def calculate_product_total(product: Product, client_id: int, db: Session):
+    shopping_cart_items = get_shopping_cart_by_client(db, client_id)
+    product_quantity = 0
+    for item in shopping_cart_items:
+        if item.product_id == product.id:
+            product_quantity += 1
+            
+    if product_quantity == 0:
+        raise ValueError(f"Product with ID {product.id} not found in shopping cart for client {client_id}.")
+    
+    total_price = product.price * product_quantity 
+    return total_price, product_quantity
+
+
 @app.get("/get/{client_id}/shopping_cart/products")
 async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(get_db)):
-    """Retrieve all products in the shopping cart for a given client as a streaming response."""
+    """Retrieve all products in the shopping cart for a given client as a streaming response, 
+    including the total price and individual product totals."""
+    
     shopping_cart_items = get_shopping_cart_by_client(db, client_id)
-    cart_products = []
+    
+    product_quantity_map = {}
     for item in shopping_cart_items:
-        product = db.query(Product).filter(Product.id == item.product_id).first()
+        if item.product_id in product_quantity_map:
+            product_quantity_map[item.product_id] += 1
+        else:
+            product_quantity_map[item.product_id] = 1
+    
+    cart_products = []
+    for product_id, quantity in product_quantity_map.items():
+        product = db.query(Product).filter(Product.id == product_id).first()
         if not product:
-            raise HTTPException(status_code=404, detail=f"Product with ID {item.product_id} not found")
+            raise HTTPException(status_code=404, detail=f"Product with ID {product_id} not found")
+        
+        product_total = product.price * quantity
+        
+        # Add product details to the list
         cart_products.append({
             "product_id": product.id,
             "name": product.name,
             "brand": product.brand,
-            "price": product.price,
-            "weight": product.weight,
-            "store_location": product.store_location,
-            "product flagged": item.success
+            "product_flagged": shopping_cart_items[0].success,  
+            "product_total": product_total,
+            "product_quantity": quantity
         })
+    
+    total_cart_price = calculate_cart_total(client_id, db)
 
+    response_data = {
+        "client_id": client_id,
+        "cart_products": cart_products,
+        "total_cart_price": total_cart_price  
+    }
+    
     def iter_content():
-        content = json.dumps({"client_id": client_id, "cart_products": cart_products})
+        content = json.dumps(response_data)
         yield content  
 
     return StreamingResponse(iter_content(), media_type="application/json")
