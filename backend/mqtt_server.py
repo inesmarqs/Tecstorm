@@ -7,6 +7,7 @@ import json
 import threading
 from fastapi import HTTPException
 from websocket_manager import notify_client
+import asyncio
 
 MQTT_BROKER = "127.0.0.1"  # O broker corre localmente no teu PC
 MQTT_PORT = 1883
@@ -39,6 +40,7 @@ def on_message(client, userdata, message):
         if check:
             remove_shopping_cart(db, 1, product.id, check[0].uid)  # TODO: usar client real
             print(f"🛒 Produto '{product.name}' removido (uid={uid})")
+            asyncio.run(notify_client("1", "ADD"))
         else:
             threading.Thread(target=add_product_use_ai, args=(product, uid)).start()
             print(f"🛒 Produto '{product.name}' adicionado (uid={uid})")

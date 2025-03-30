@@ -30,6 +30,17 @@ def add_product(db: Session, bar_code: str, name: str, brand: str, price: float,
         print("Produto já existente, ignorado.")
     return db_product.id
 
+def add_product_populate(db, barcode, name, url, description, brand, price, reference, image, atributes, category_id):
+    db_product = Product(
+        bar_code=barcode, name=name, url=url, description=description, brand=brand, price=price, reference=reference, image=image, atributes=atributes, category_id=category_id
+    )
+    db.add(db_product)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        print("Produto já existente, ignorado.")
+    return db_product.id
 
 def add_ingredient(db: Session, product_id: int, name: str):
     """Adds an ingredient to the database."""

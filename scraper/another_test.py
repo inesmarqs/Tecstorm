@@ -8,10 +8,10 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 
 CHROMEDRIVER_PATH = "/usr/local/bin/chromedriver"
-INPUT_JSON = "docs/urls.json"
+INPUT_JSON = "docs/urls2.json"
 OUTPUT_JSON = "docs/urls_enriched.json"
-OUTPUT_PARTIAL_JSON = "docs/urls_enriched_partial.jsonl"
-MID_SAVE = "docs/temp_urls.json"
+OUTPUT_PARTIAL_JSON = "docs/urls_enriched_partial.json"
+MID_SAVE = "docs/temp_new_urls.json"
 
 def scrape_barcode_info(barcode):
     url = f"https://www.barcodelookup.com/{barcode}"
@@ -88,15 +88,15 @@ def scrape_barcode_info(barcode):
 def main():
     produtos = []
 
-    # Lê os produtos originais
     with open(INPUT_JSON, "r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                obj = json.loads(line)
+        try:
+            data = json.load(f)
+            for obj in data:
                 if "id" in obj and obj["id"]:
                     produtos.append(obj)
-            except:
-                continue
+        except Exception as e:
+            print(f"❌ Erro a ler {INPUT_JSON}: {e}")
+
 
     # Ler IDs já presentes no MID_SAVE
     ids_already_scraped = set()
@@ -118,7 +118,7 @@ def main():
 
     print(f"🔄 A processar {remaining_to_scrape} novos de {total} totais (já processados: {len(ids_already_scraped)})...\n")
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=14) as executor:
         futures = {executor.submit(scrape_barcode_info, pid): pid for pid in ids_to_scrape}
         for future in as_completed(futures):
             result = future.result()
@@ -127,31 +127,6 @@ def main():
                 with open(OUTPUT_PARTIAL_JSON, "a", encoding="utf-8") as f:
                     f.write(json.dumps(result, ensure_ascii=False) + "\n")
             print(f"✅ [{counter}/{remaining_to_scrape}] {result['id']} - {result.get('nome')} | Faltam: {remaining_to_scrape - counter}")
-
-    # Fundir com os dados originais
-    enriched_final = []
-    enriched_all = {}
-    with open(OUTPUT_PARTIAL_JSON, "r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                scraped = json.loads(line)
-                enriched_all[scraped["id"]] = scraped
-            except:
-                continue
-
-    for original in produtos:
-        pid = original["id"]
-        if pid in enriched_all:
-            enriched_obj = original.copy()
-            enriched_obj.update(enriched_all[pid])
-            enriched_final.append(enriched_obj)
-
-    # Guardar resultado final
-    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
-        for obj in enriched_final:
-            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
-
-    print(f"\n📦 Enriquecidos guardados: {OUTPUT_JSON} ({len(enriched_final)} produtos válidos de {total})")
 
 if __name__ == "__main__":
     main()

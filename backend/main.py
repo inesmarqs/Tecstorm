@@ -48,92 +48,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-        
-def populate_db():
-    db = next(get_db())
-    category = add_category(db, "frutas")
-    
-    client_id = add_client(db, "user1", "915193363", "22222222222", "12-12-1980", "password")
-    shopping_cart = add_shopping_cart(db, client_id, 1, 1)
-    allergens = add_allergen(db, client_id, "gluten")
-    
-    nutricion1 = add_nutricional_info(db,
-        energy_kj = 100,
-        energy_kcal = 50,
-        lipids = 10,
-        saturated_lipids = 5,
-        carbon_hidrats = 20,
-        sugar_carbon_hidrats = 10,
-        fiber = 5,
-        protein = 10,
-        salt = 0,
-        product_id = 1
-    )
-
-    print("2")
-    ingredient1 = Ingredient(
-        id = 1,
-        product_id = 1,
-        name = "gluten"
-    )
-    
-    print("3")
-    product = Product(
-        id = 1,
-        bar_code = "123456789",
-        name = "laranja",
-        brand = "laranja",
-        price = 1.99,
-        weight = 1.0,
-        store_location = "a1",
-    )
-    print("Try to add")
-    
-    add_product(db, bar_code=product.bar_code, name=product.name, brand=product.brand, price=product.price, weight=product.weight, store_location=product.store_location, category_id=category)
-    add_product(db, bar_code="123456781", name="banana", brand="banana", price=1.99, weight=1.0, store_location="a1", category_id=category)
-    add_product(db, bar_code="123444444", name="cherry", brand="cherry", price=1.99, weight=1.0, store_location="a1", category_id=category)
-    add_product(db, bar_code="666632342", name="apple", brand="apple", price=1.99, weight=1.0, store_location="a1", category_id=category)
-    add_product(db, bar_code="123453212", name="tangerine", brand="tangerine", price=1.99, weight=1.0, store_location="a1", category_id=category)
-    add_product(db, bar_code="123450089", name="grape", brand="grape", price=1.99, weight=1.0, store_location="a1", category_id=category)
-    add_ingredient(db, product.id, "gluten")
-    add_ingredient(db, 1, "orange")
-    add_ingredient(db, 2, "banana")
-    add_ingredient(db, 3, "cherry")
-    add_ingredient(db, 4, "apple")
-    add_ingredient(db, 5, "orange")
-    add_ingredient(db, 6, "grape")
-    add_nutricional_info(db,
-        energy_kj = 100,
-        energy_kcal = 50, lipids=10, saturated_lipids=5, carbon_hidrats=20, sugar_carbon_hidrats=10, fiber=5, protein=10, salt=0, product_id=1)
-    
-    
-def test_add_product():
-    db = next(get_db())
-    print("check")
-    client = add_client(db, "user1", "915193363", "22222222222", "12-12-1980", "password")
-    alle = add_allergen(db, client, "gluten")
-    add_category(db, "bebidas")
-    print("1")
-    add_product(db, bar_code="5449000054227", name="coca cola normal", brand="coca cola", price=1.99, weight=1.0, store_location="a1", category_id=1)
-    add_ingredient(db, 1, "gluten")
-    print("2")
-    add_product(db, bar_code="123456781", name="banana", brand="banana", price=1.99, weight=1.0, store_location="a1", category_id=1)
-    add_ingredient(db, 2, "banana")
-        
-#def example_data():
-#    print("1")
-#    time.sleep(4)
-#    db = next(get_db())
-#    check = get_product(db, 1)
-#    print(check)
-#    client = get_client(db, 1)
-#    response = ai_services.is_product_suitable(check.name, get_ingredients_by_product(db, check.id), get_allergens_by_client(db, client.id))
-#    if response.lower() == "no":
-#        recommendations = ai_services.get_product_recommendations(check, get_product_by_category_without_blacklisted(db, check.category_id, check.id), get_allergens_by_client(db, client.id))
-#        print(recommendations)
-#    else:
-#        print("Product is suitable")
-    
     
     
 @app.get("/get/{client_id}/shopping_cart/products")
@@ -234,6 +148,11 @@ async def takeMeThere(prodcut_id: str = Header(...), db: Session = Depends(get_d
         
 mqtt_thread = threading.Thread(target=start_mqtt)
 mqtt_thread.start()
-#populate_db()
-test_add_product()
-#example_data()
+
+def test_client():
+    db = next(get_db())
+    Client_id = add_client(db, "test", "915193363", "22222222222", "12-12-1980", "test")
+    connect_client(websocket="1",client_id=Client_id)
+    alle = add_allergen(db=db, client_id=Client_id, name="frutos de casca rija")
+    
+test_client()

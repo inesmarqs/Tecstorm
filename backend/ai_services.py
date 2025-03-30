@@ -5,6 +5,8 @@ from db_session import get_db
 from database.commands_database import add_shopping_cart, get_product_by_category_without_blacklisted, get_client, get_shopping_cart_items, get_product, add_recommendations
 from websocket_manager import notify_client
 import asyncio
+from db_session import get_db
+from database.models import Recommendations
 
 load_dotenv()
 
@@ -18,7 +20,7 @@ def add_product_use_ai(product, uid):
     user = get_client(db, 1)
     product = get_product(db, product.id)
     response = is_product_suitable(product.name, product.ingredients, user.allergens)
-    success = (response == "Yes")
+    success = ((response.lower() == "yes") or ((response.lower()) == "y") or ((response.lower()) == "sim")) or ((response.lower()) == "s")
     if not success:
         try:
             recommendations = get_product_recommendations(product, get_product_by_category_without_blacklisted(db, product.category_id, product.id), user.allergens)
@@ -34,7 +36,6 @@ def add_product_use_ai(product, uid):
     asyncio.run(notify_client("1", "ADD")) 
     for item in get_shopping_cart_items(db, 1):
         print(item.product.name)
-    
     
 # Function to check if a product is suitable based on allergens
 def is_product_suitable(product_name: str, product_ingredients: list, user_allergens: list) -> str:
@@ -65,9 +66,14 @@ def is_product_suitable(product_name: str, product_ingredients: list, user_aller
     answer = chat_completion.choices[0].message.content.strip()
     return answer
 
-
 # Function to get product recommendations based on a user's profile
-def get_product_recommendations(failed_product, category_products, user_allergens: list, num_recommendations: int = 10) -> str:
+
+def get_product_recommendations(failed_product, category_products, user_allergens: list, num_recommendations: int = 11) -> str:
+    db = next(get_db())
+    recommend = db.query(Recommendations).filter(Recommendations.product_id == failed_product.id).first()
+    if recommend:
+        print("Already recommendations")
+        return str(recommend.product_recommended_id)
     """
     Requests product recommendations based on a user's allergens and the failed product.
     """
@@ -75,15 +81,21 @@ def get_product_recommendations(failed_product, category_products, user_allergen
     The following product failed the allergen suitability check for a user:
 
     Failed Product: {failed_product.name}
+    Ingredients: {", ".join([ingredient.name for ingredient in failed_product.ingredients])}
     
     User Allergens: {", ".join([allergen.name for allergen in user_allergens])}
     Instructions:
-    - Based on the failed product, recommend {num_recommendations} other products from the same category.
+    - Based on the failed product, recommend EXACTLY {num_recommendations} other products from the same category.
     - The products you recommend must not contain any of the allergens listed.
     - For each recommended product, include its id only if it is safe (i.e., does not contain any allergens).
-    - Respond with the ids of suitable products only. Limit the list to {num_recommendations} products.
+    - Respond ONLY with the ids of suitable products only and DO NOT REPEAT products.
     """
-    category_products_str = "\n".join([f"{product.id}: {", ".join([ingredient.name for ingredient in product.ingredients])}" for product in category_products])
+    category_products_str = "\n".join([
+    f"{product.id}: {', '.join([ingredient.name for ingredient in product.ingredients])}"
+    for product in category_products
+    if len(product.ingredients) > 0  # só inclui se tiver ingredientes
+])
+
     
     prompt += f"\n\nList of products in the same category:\n{category_products_str}"
 
@@ -95,5 +107,8 @@ def get_product_recommendations(failed_product, category_products, user_allergen
     )
     
     recommendations = chat_completion.choices[0].message.content.strip()    
-    print(recommendations)          
-    return recommendations
+    print(recommendations)
+    rec = [int(x) for x in recommendations.split(", ") if x.strip().isdigit()]
+    rec.sort()
+    return str(rec[-1]) if rec else ""
+
