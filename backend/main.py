@@ -2,7 +2,7 @@ import asyncio
 import os
 import shutil
 from pathlib import Path
-import ai_services
+#import ai_services
 from database.database import SessionLocal
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, Header, Body, WebSocket
 from websocket_manager import connect_client, disconnect_client
@@ -13,8 +13,9 @@ from sqlalchemy.orm import Session
 import json
 import time
 import threading
-from mqtt_server import start_mqtt
+#from mqtt_server import start_mqtt
 from db_session import get_db
+from websocket_manager import notify_client
 
 from database.commands_database import (
     add_client,
@@ -159,7 +160,8 @@ async def get_products_in_shopping_cart(client_id: int, db: Session = Depends(ge
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await connect_client(websocket)
+    await connect_client(websocket,1)
+    notify_client(1, "ADD")
     try:
         while True:
             await websocket.receive_text()  # apenas mantém a ligação ativa
@@ -229,8 +231,9 @@ async def takeMeThere(prodcut_id: int = Header(...), db: Session = Depends(get_d
     return {"message": product.store_location}
 
 
-mqtt_thread = threading.Thread(target=start_mqtt)
-mqtt_thread.start()
-#populate_db()
-test_add_product()
-#example_data()
+#mqtt_thread = threading.Thread(target=start_mqtt)
+#mqtt_thread.start()
+##populate_db()
+#test_add_product()
+##example_data()
+#
