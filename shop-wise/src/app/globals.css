@@ -227,8 +227,22 @@ body {
   border-bottom: #0f1d1c66;
   color: black;
   gap: 0.2rem;
-  border-top: 1.3px solid rgba(95, 95, 95, 0.65);
+
   width: 100%;
   font-size: 1.3rem;
   margin-left: 2rem;
+}
+
+
+.nav.pay{
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 1rem;
+  background-color: #5cecc4;
+  font-size: medium;
+  font-weight: bold;
+  padding: 0.8rem 3rem;
+  margin-right: 3rem;
+  color: #0f1d1c;
+  
 }

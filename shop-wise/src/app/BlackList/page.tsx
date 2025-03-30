@@ -19,42 +19,71 @@ export default function BlackList() {
   const { clientId } = useClient();
     
 
-
-    const handleAddNewItem = async () => {
-        if (!newItem.trim()) {
-        console.error("No allergen name provided!");
-        return;
-        }
-    
-        if (!clientId) {
-        console.error("Client ID is missing:", clientId);
-        return;
-        }
-    
-        try {
-        const response = await fetch("http://193.236.212.127:8000/addToBlackList", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json", 
-                "client-id": String(clientId),      
-              },
-            body: JSON.stringify(newItem),
+  useEffect(() => {
+    const fetchBlacklist = async () => {
+      try {
+        const response = await fetch("http://193.236.212.127:8000/getBlackList", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "client-id": String(clientId),
+          },
         });
     
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to add item: ${errorText}`);
-        }
+        const data = await response.json();
+        console.log("Fetched Blacklist Data:", data); // Debugging line
     
-        console.log("Item added successfully!");
-        setBlacklist([...blacklist, newItem]); 
-        setNewItem(""); 
-        setShowAddItem(false); 
-    
-        } catch (error) {
-        console.error("Error adding item:", error);
+        if (Array.isArray(data.blacklist)) {
+          setBlacklist(data.blacklist); // ✅ Extract the array
+        } else {
+          console.error("API did not return an array:", data);
+          setBlacklist([]); // Ensure it's always an array
         }
+      } catch (error) {
+        console.error("Error fetching blacklist:", error);
+      }
     };
+    
+  
+    fetchBlacklist();
+  }, [clientId]); 
+  
+
+  const handleAddNewItem = async () => {
+      if (!newItem.trim()) {
+      console.error("No allergen name provided!");
+      return;
+      }
+  
+      if (!clientId) {
+      console.error("Client ID is missing:", clientId);
+      return;
+      }
+  
+      try {
+      const response = await fetch("http://193.236.212.127:8000/addToBlackList", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json", 
+              "client-id": String(clientId),      
+            },
+          body: JSON.stringify(newItem),
+      });
+  
+      if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to add item: ${errorText}`);
+      }
+  
+      console.log("Item added successfully!");
+      setBlacklist([...blacklist, newItem]); 
+      setNewItem(""); 
+      setShowAddItem(false); 
+  
+      } catch (error) {
+      console.error("Error adding item:", error);
+      }
+  };
   
 
   // Handle deleting an item from the blacklist

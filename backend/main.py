@@ -260,7 +260,7 @@ async def add_allergen_to_blacklist(allergen_name: str = Body(...),  client_id: 
     allergen_id = add_allergen(db=db, client_id=client_id, name=allergen_name)
     return {"message": f"Allergen '{allergen_name}' added to blacklist successfully", "allergen_id": allergen_id}
 
-@app.post("/deleteIngredientFromBlackList")
+@app.post("/removeFromBlackList")
 async def delete_allergen_from_blacklist(allergen_name: str = Body(...), client_id: str = Header(...), db: Session = Depends(get_db)):  
     """Delete an allergen from a client's blacklist."""
     client_id = int(client_id)
@@ -318,18 +318,19 @@ async def get_recommendations_for_product_and_client(
     The recommendations will take into account the client's allergens and preferences.
     """
     
-    recommendations = get_recommendations_by_product_id(int(product_id), int(client_id))
-    recommendations_dict = {}
-    for recommendation in recommendations:
-        product = get_product(db, recommendation.product_id)
-        if product:
-            recommendations_dict[product.id] = {
-                "recommendation-name": product.name,
-                "recommendation-brand": product.brand,
-                "recommendation-price": product.price,
-                "recommendation-location": product.store_location
-            }
-    return {"recommendations": recommendations_dict}
+    recommendation = get_recommendations_by_product_id(db,int(product_id), int(client_id))
+    product = get_product(db, recommendation.product_recommended_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="No product found for this recommendation.")
+    rec_list = []
+    if product:
+        rec_list.append(product.name)
+        rec_list.append(product.brand)
+        rec_list.append(product.price)
+        rec_list.append(product.store_location)
+    
+    print(rec_list)
+    return {"response": rec_list}
 
 
 mqtt_thread = threading.Thread(target=start_mqtt)

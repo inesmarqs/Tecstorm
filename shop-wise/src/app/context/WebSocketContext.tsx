@@ -18,8 +18,12 @@ type CartData = {
   total_cart_price: number;
 };
 
-const WebSocketContext = createContext<{ cartData: CartData | null }>({
+const WebSocketContext = createContext<{
+  cartData: CartData | null;
+  setCartData: React.Dispatch<React.SetStateAction<CartData | null>>;
+}>({
   cartData: null,
+  setCartData: () => {},
 });
 
 export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
@@ -64,7 +68,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
   }, [clientId]);
 
   return (
-    <WebSocketContext.Provider value={{ cartData }}>
+    <WebSocketContext.Provider value={{ cartData, setCartData }}>
       {children}
     </WebSocketContext.Provider>
   );
