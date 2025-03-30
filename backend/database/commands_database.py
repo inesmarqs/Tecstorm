@@ -202,3 +202,12 @@ def delete_shopping_cart_items(db: Session, client_id: int):
     except Exception as e:
         db.rollback()  
         raise e
+    
+def delete_recommendations(db: Session, client_id: int):
+    """Deletes all recommendation entries for a given client."""
+    try:
+        db.query(Recommendations).filter(Recommendations.client_id == client_id).delete(synchronize_session=False)
+        db.commit()
+    except Exception as e:
+        db.rollback()  
+        raise e

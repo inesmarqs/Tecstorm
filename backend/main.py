@@ -35,7 +35,8 @@ from database.commands_database import (
     get_product_by_barcode, 
     get_product_by_category,
     get_product_by_category_without_blacklisted,
-    delete_shopping_cart_items
+    delete_shopping_cart_items,
+    delete_recommendations
 )
 
 app = FastAPI()
@@ -272,6 +273,7 @@ async def pay(client_id: int = Header(...), db: Session = Depends(get_db)):
     
     try:
         delete_shopping_cart_items(db, client_id)
+        delete_recommendations(db, client_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error while deleting shopping cart items.")
     
@@ -286,7 +288,6 @@ async def takeMeThere(prodcut_id: str = Header(...), db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
 
-        
 mqtt_thread = threading.Thread(target=start_mqtt)
 mqtt_thread.start()
 #populate_db()
