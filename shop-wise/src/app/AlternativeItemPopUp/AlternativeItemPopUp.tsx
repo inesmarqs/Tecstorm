@@ -23,7 +23,7 @@ export default function AlternativeItemPopUp({ itemName, onClose, productId }: {
     useEffect(() => {
         const fetchRecommendations = async () => {
             try {
-                const response = await fetch("http://193.236.212.127:8000/recommendations", {
+                const response = await fetch("http://192.168.1.136:8000/recommendations", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -44,7 +44,7 @@ export default function AlternativeItemPopUp({ itemName, onClose, productId }: {
                         name: data.response[0] || "Unknown Item",
                         brand: data.response[1] || "Unknown Brand",
                         price: data.response[2] !== undefined ? data.response[2] : "N/A",
-                        location: data.response[3] || "Not Available",
+                        location: "Tecstorm B7",
                     });
                 } else {
                     setRecommendation(null);

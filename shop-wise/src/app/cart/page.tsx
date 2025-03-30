@@ -49,7 +49,7 @@ export default function Cart() {
     const fetchCartData = async () => {
       if (!clientId) return;
       try {
-        const response = await fetch(`http://193.236.212.127:8000/get/${clientId}/shopping_cart/products`);
+        const response = await fetch(`http://192.168.1.136:8000/get/${clientId}/shopping_cart/products`);
         if (response.ok) {
           const data: CartData = await response.json();
           setCartData(data);
@@ -73,7 +73,7 @@ export default function Cart() {
   const handlePay = async () => {
     if (!clientId) return;
     try {
-      const response = await fetch("http://193.236.212.127:8000/pay", {
+      const response = await fetch("http://192.168.1.136:8000/pay", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,7 +85,7 @@ export default function Cart() {
         console.error("Error during payment:", errorText);
         return;
       }
-      setCartData(null); 
+      //setCartData(null); 
     } catch (error) {
       console.error("Error during payment:", error);
     }
@@ -101,11 +101,13 @@ export default function Cart() {
       </div>
 
       <div className="black-list-container">
+      
         <div className="your-black-list-text">Your Shopping Cart:</div>
-
+        <div style={{ color: "red", fontSize: "1.1rem" }}>{flaggedItem?.name}</div>
         {/* Conditionally render the InvalidItemPopUp */}
         {showInvalidPopup && flaggedItem && (
           <div>
+            <div style={{ color: "black", fontSize: "1.1rem" }}>{flaggedItem.name}</div>
 
           <audio ref={audioRef}>
                 <source src="/notific.wav" type="audio/mpeg" />

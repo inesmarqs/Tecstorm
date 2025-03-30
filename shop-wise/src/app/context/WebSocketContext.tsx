@@ -29,7 +29,7 @@ const WebSocketContext = createContext<{
 export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [cartData, setCartData] = useState<CartData | null>(null);
   const { clientId } = useClient();
-  const backendUrl = "http://193.236.212.127:8000"; // Your backend URL
+  const backendUrl = "http://192.168.1.136:8000"; // Your backend URL
 
   useEffect(() => {
     if (!clientId) return;

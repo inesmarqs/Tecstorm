@@ -21,7 +21,7 @@ export default function Login() {
         console.log("Username:", username);
         console.log("Password:", password);
         try {
-        const response = await fetch("http://193.236.212.127:8000/login", {
+        const response = await fetch("http://192.168.1.136:8000/login", {
             method: "POST",
             headers: {
             "username": username,

@@ -3,6 +3,8 @@ from fastapi import HTTPException
 from database.models import Client, Product, Ingredient, Allergen, NutricionalInformation, ShoppingCart, Category, Recommendations
 from db_session import get_db
 from sqlalchemy.exc import IntegrityError
+import asyncio
+from websocket_manager import notify_client
 
 
 
@@ -97,6 +99,7 @@ def remove_shopping_cart(db: Session, client_id: int, product_id: int, uid: int)
     db.commit()
 
     print(f"🧹 Itens apagados: {deleted}")
+    asyncio.run(notify_client("1", "ADD"))
 
     return
 

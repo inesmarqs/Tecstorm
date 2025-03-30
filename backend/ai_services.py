@@ -33,12 +33,15 @@ def add_product_use_ai(product, uid):
             print(e)
             print("No recommendations")
     add_shopping_cart(db, 1, product.id, uid, success)
-    asyncio.run(notify_client("1", "ADD")) 
+    asyncio.run(notify_client("1", "ADD"))
     for item in get_shopping_cart_items(db, 1):
         print(item.product.name)
+    asyncio.run(notify_client("1", "ADD"))
     
 # Function to check if a product is suitable based on allergens
 def is_product_suitable(product_name: str, product_ingredients: list, user_allergens: list) -> str:
+    if (len(user_allergens) == 0):
+        return "Yes"
     """
     Uses Groq API (Llama model) to check if a product is safe for a user based on allergens.
     """
