@@ -32,7 +32,7 @@ export default function BlackList() {
         }
     
         try {
-        const response = await fetch("http://192.168.1.136:8000/addToBlackList", {
+        const response = await fetch("http://193.236.212.127:8000/addToBlackList", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json", 
@@ -62,7 +62,7 @@ export default function BlackList() {
     setBlacklist(blacklist.filter(item => item !== itemToDelete));
 
     try{
-        fetch("http://192.168.1.136:8000/removeFromBlackList", {
+        fetch("http://193.236.212.127:8000/removeFromBlackList", {
             method: "POST",
             headers: {
             "Content-Type": "application/json",
