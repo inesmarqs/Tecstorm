@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from websocket_manager import notify_client
 import asyncio
 
+
 MQTT_BROKER = "127.0.0.1"  # O broker corre localmente no teu PC
 MQTT_PORT = 1883
 MQTT_TOPIC = "test/tecstorm"
@@ -44,6 +45,8 @@ def on_message(client, userdata, message):
         else:
             threading.Thread(target=add_product_use_ai, args=(product, uid)).start()
             print(f"🛒 Produto '{product.name}' adicionado (uid={uid})")
+        
+        notify_client("1", "ADD")
 
     except Exception as e:
         print(f"❌ Erro ao processar mensagem MQTT: {e}")

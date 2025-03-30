@@ -203,12 +203,27 @@ def get_shopping_cart_item_by_uid(db: Session, uid: int):
         raise HTTPException(status_code=404, detail="Product was not in the cart")
     return product
 
+def get_recommendations_by_product_id(db: Session, product_id: int, client_id:int):
+    """Retrieved recommendations given a failed product id"""
+    recommendation = db.query(Recommendations).filter(Recommendations.product_id==product_id and Recommendations.client_id==client_id).one()
+    if not recommendation:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    return recommendation
 #-----------------------DELETE COMMANDS------------------------
 
 def delete_shopping_cart_items(db: Session, client_id: int):
     """Deletes all items in the shopping cart for a given client."""
     try:
         db.query(ShoppingCart).filter(ShoppingCart.client_id == client_id).delete(synchronize_session=False)
+        db.commit()
+    except Exception as e:
+        db.rollback()  
+        raise e
+    
+def delete_recommendations(db: Session, client_id: int):
+    """Deletes all recommendation entries for a given client."""
+    try:
+        db.query(Recommendations).filter(Recommendations.client_id == client_id).delete(synchronize_session=False)
         db.commit()
     except Exception as e:
         db.rollback()  
