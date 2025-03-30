@@ -36,7 +36,8 @@ from database.commands_database import (
     get_product_by_category,
     get_product_by_category_without_blacklisted,
     delete_shopping_cart_items,
-    delete_recommendations
+    delete_recommendations,
+    get_recommendations_by_product_id
 )
 
 app = FastAPI()
@@ -287,6 +288,29 @@ async def takeMeThere(prodcut_id: str = Header(...), db: Session = Depends(get_d
     if not product:
         raise HTTPException(status_code=404, detail="No product found for this product id.")
     return {"message": product.store_location}
+
+@app.get("/recommendations")
+async def get_recommendations_for_product_and_client(
+    product_id: str = Header(...), client_id: str = Header(...), db: Session = Depends(get_db)
+):
+    """
+    Get product recommendations for a given product and client ID.
+    The recommendations will take into account the client's allergens and preferences.
+    """
+    
+    recommendations = get_recommendations_by_product_id(int(product_id), int(client_id))
+    recommendations_dict = {}
+    for recommendation in recommendations:
+        product = get_product(db, recommendation.product_id)
+        if product:
+            recommendations_dict[product.id] = {
+                "recommendation-name": product.name,
+                "recommendation-brand": product.brand,
+                "recommendation-price": product.price,
+                "recommendation-location": product.store_location
+            }
+    return {"recommendations": recommendations_dict}
+
 
 mqtt_thread = threading.Thread(target=start_mqtt)
 mqtt_thread.start()

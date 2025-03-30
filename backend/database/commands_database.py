@@ -192,6 +192,12 @@ def get_shopping_cart_item_by_uid(db: Session, uid: int):
         raise HTTPException(status_code=404, detail="Product was not in the cart")
     return product
 
+def get_recommendations_by_product_id(db: Session, product_id: int, client_id:int):
+    """Retrieved recommendations given a failed product id"""
+    recommendations = db.query(Recommendations).filter(Recommendations.product_id==product_id and Recommendations.client_id==client_id).all()
+    if not recommendations:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    return recommendations
 #-----------------------DELETE COMMANDS------------------------
 
 def delete_shopping_cart_items(db: Session, client_id: int):
