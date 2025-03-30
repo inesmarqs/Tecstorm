@@ -238,16 +238,6 @@ async def login(db: Session = Depends(get_db), username: str = Header(...), pass
     else: 
         client_id = client.id
         
-    alle = add_allergen(db, client_id, "gluten")
-    add_category(db, "bebidas")
-    print("1")
-    add_product(db, bar_code="5449000054227", name="coca cola normal", brand="coca cola", price=1.99, weight=1.0, store_location="a1", category_id=1)
-    add_ingredient(db, 1, "gluten")
-    print("2")
-    add_product(db, bar_code="123456781", name="banana", brand="banana", price=1.99, weight=1.0, store_location="a1", category_id=1)
-    add_ingredient(db, 2, "banana")
-    add_product(db, bar_code="111122234", name="coca", brand="coca", price=1.99, weight=1.0, store_location="a1", category_id=1)
-    add_ingredient(db, 3, "coca")
     return {client_id}
 
 @app.post("/addToBlackList")
